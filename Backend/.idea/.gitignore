@@ -1,0 +1,31 @@
+# Ignorar archivos generados por el IDE
+/.idea/
+/shelf/
+/workspace.xml
+/httpRequests/
+/dataSources/
+/dataSources.local.xml
+
+# Ignorar artefactos de construcción de Gradle
+.gradle/
+build/
+
+# Ignorar binarios y archivos temporales
+*.class
+*.bin
+*.lock
+*.log
+
+# Ignorar carpetas de salida estándar de compiladores de Java
+out/
+target/
+
+# Ignorar configuraciones específicas de usuarios en el proyecto
+*.iml
+*.ipr
+*.iws
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
+

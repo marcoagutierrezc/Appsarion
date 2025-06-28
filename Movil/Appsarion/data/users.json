@@ -1,0 +1,67 @@
+[
+  {
+    "name": "John Dave",
+    "documentType": "ce",
+    "documentNumber": 1234567890,
+    "phoneNumber": 3123456789,
+    "email": "johndoe@example.com",
+    "password ": "password123",
+    "role": "piscicultor",
+    "dataRole": {
+      "nameProperty": "Estación JD",
+      "department": "Meta",
+      "municipality": "Villavicencio",
+      "neighborhood": "Llanerita",
+      "justification": "Productor de pescado de la región",
+      "supportingDocument": "soporte-John-Dave.pdf"
+    }
+  },
+  {
+    "name": "Jane Doe",
+    "documentType": "cc",
+    "documentNumber": 9876543210,
+    "phoneNumber": 3210987654,
+    "email": "janedoe@example.com",
+    "password ": "password456",
+    "role": "agente de control de sanidad",
+    "dataRole":{
+      "company":"ACS",
+      "employment":"Revisor",
+      "justification": "Soy revisor de una agencia de sanidad",
+      "supportingDocument": "soporte-Jane-Doe.pdf"
+    }
+  },
+  {
+    "name": "Robert Smith",
+    "documentType": "p",
+    "documentNumber": 4567890123,
+    "phoneNumber": 3456789012,
+    "email": "robertsmith@example.com",
+    "password ": "password789",
+    "role": "academico",
+    "dataRole":{
+      "institution":"Unillanos",
+      "career":"MVZ",
+      "course":"Pescados",
+      "justification": "Estudiante que requiere del uso de la herramienta",
+      "supportingDocument": "soporte-Robert-Smith.pdf"
+    }
+  },
+  {
+    "name": "Michael Williams",
+    "documentType": "cc",
+    "documentNumber": 2345678901,
+    "phoneNumber": 4567890123,
+    "email": "michaelwilliams@example.com",
+    "password ": "passwordxyz",
+    "role": "piscicultor",
+    "dataRole": {
+      "nameProperty": "Estación MW",
+      "department": "Meta",
+      "municipality": "Guamal",
+      "neighborhood": "Villalgo",
+      "justification": "Productor de pescado de la región",
+      "supportingDocument": "soporte-Michael-Williams.pdf"
+    }
+  }
+]

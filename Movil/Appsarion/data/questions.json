@@ -1,0 +1,184 @@
+{
+    "questions": [
+        {
+            "id": 1,
+            "category": "ASPECTOS GENERALES DE LA PISCICULTURA",
+            "question": "¿Cuál de los siguientes factores es fundamental al elegir una especie de peces para cultivo en una zona determinada?",
+            "answer": "Las condiciones climáticas y la temperatura del agua.",
+            "options": [
+              "El costo de producción.",
+              "La disponibilidad de infraestructuras para el cultivo.",
+              "Las condiciones climáticas y la temperatura del agua.",
+              "La rentabilidad del mercado local."
+            ]
+          },
+          {
+            "id": 2,
+            "category": "ASPECTOS GENERALES DE LA PISCICULTURA",
+            "question": "¿Qué impacto tiene la piscicultura en la economía local?",
+            "answer": "Genera empleo y promueve el comercio local.",
+            "options": [
+              "Genera empleo y promueve el comercio local.",
+              "Depende exclusivamente de la exportación.",
+              "Tiene un impacto negativo en las zonas rurales.",
+              "No tiene influencia en la economía local."
+            ]
+          },
+          {
+            "id": 3,
+            "category": "ASPECTOS GENERALES DE LA PISCICULTURA",
+            "question": "¿Cuál de las siguientes prácticas contribuye a la sostenibilidad de la piscicultura?",
+            "answer": "La gestión adecuada de los recursos hídricos y el tratamiento de aguas residuales.",
+            "options": [
+              "El uso intensivo de antibióticos.",
+              "La rotación de especies de peces en los mismos estanques.",
+              "La gestión adecuada de los recursos hídricos y el tratamiento de aguas residuales.",
+              "La sobrealimentación de los peces para acelerar su crecimiento."
+            ]
+          },
+          {
+            "id": 4,
+            "category": "SUELOS Y ESTANQUES",
+            "question": "¿Qué propiedad de los suelos es esencial para la construcción de estanques de piscicultura?",
+            "answer": "Alta permeabilidad.",
+            "options": [
+              "Alta permeabilidad.",
+              "Baja capacidad de retención de agua.",
+              "Alta acidez.",
+              "Baja capacidad de retención de nutrientes."
+            ]
+          },
+      {
+        "id": 5,
+        "category": "SUELOS Y ESTANQUES",
+        "question": "¿Cuál es la principal razón para monitorear constantemente la calidad del agua en los estanques?",
+        "answer": "Asegurar el crecimiento adecuado de los peces.",
+        "options": [
+          "Asegurar el crecimiento adecuado de los peces.",
+          "Reducir los costos de operación.",
+          "Evitar la sobrepoblación de los estanques.",
+          "Minimizar el consumo de oxígeno en el agua."
+        ]
+      },
+      {
+        "id": 6,
+        "category": "SUELOS Y ESTANQUES",
+        "question": "¿Cuál de las siguientes prácticas contribuye a mantener la calidad del agua en un estanque?",
+        "answer": "El uso de sistemas de filtración y aireación.",
+        "options": [
+          "La construcción de estanques con alta permeabilidad.",
+          "El uso de productos químicos para aumentar el pH.",
+          "El uso de sistemas de filtración y aireación.",
+          "La sobrealimentación para aumentar la productividad."
+        ]
+      },
+      {
+        "id": 7,
+        "category": "COSECHA Y POST PRODUCCIÓN",
+        "question": "¿Cuál es el principal factor para garantizar la frescura del pescado después de la cosecha?",
+        "answer": "Refrigeración o congelación inmediata.",
+        "options": [
+          "Exposición al aire libre.",
+          "Refrigeración o congelación inmediata.",
+          "Secado al sol.",
+          "Mantener el pescado en el agua hasta su venta."
+        ]
+      },
+      {
+        "id": 8,
+        "category": "COSECHA Y POST PRODUCCIÓN",
+        "question": "¿Qué proceso es fundamental para asegurar la calidad del pescado en la post-producción?",
+        "answer": "Evisceración y limpieza en un ambiente controlado.",
+        "options": [
+          "Evisceración y limpieza en un ambiente controlado.",
+          "Dejar el pescado en las jaulas por varios días.",
+          "Transportar el pescado sin ninguna medida de refrigeración.",
+          "Exponer el pescado al calor para eliminar bacterias."
+        ]
+      },
+      {
+        "id": 9,
+        "category": "COSECHA Y POST PRODUCCIÓN",
+        "question": "¿Qué es lo más importante al clasificar el pescado en la post-producción?",
+        "answer": "El tamaño, peso y calidad del pescado.",
+        "options": [
+          "La forma física del pescado.",
+          "La fecha de cosecha únicamente.",
+          "El tamaño, peso y calidad del pescado.",
+          "El costo de la operación."
+        ]
+      },
+      {
+        "id": 10,
+        "category": "BUENAS PRACTICAS DE MANEJO",
+        "question": "¿Cuál de las siguientes es una práctica recomendada para evitar la contaminación del agua en un sistema de piscicultura?",
+        "answer": "El uso de biofiltros y sistemas de recirculación de agua.",
+        "options": [
+          "Sobrealimentar a los peces para que crezcan más rápido.",
+          "El uso de biofiltros y sistemas de recirculación de agua.",
+          "No controlar la calidad del agua, ya que los peces se adaptan.",
+          "No cambiar el agua durante toda la producción."
+        ]
+      },
+      {
+        "id": 11,
+        "category": "BUENAS PRACTICAS DE MANEJO",
+        "question": "¿Qué medida de bioseguridad es esencial para prevenir la introducción de enfermedades en una piscicultura?",
+        "answer": "Desinfección de equipos y personas que entren al área de cultivo.",
+        "options": [
+          "Desinfección de equipos y personas que entren al área de cultivo.",
+          "Uso frecuente de antibióticos en los peces.",
+          "Ignorar los síntomas de enfermedades en los peces.",
+          "Mantener el agua estancada en los estanques."
+        ]
+      },
+      {
+        "id": 12,
+        "category": "BUENAS PRACTICAS DE MANEJO",
+        "question": "¿Cuál es el principal beneficio de una correcta alimentación en los peces?",
+        "answer": "Mejora la eficiencia de la conversión alimenticia y reduce el impacto ambiental.",
+        "options": [
+          "Menor cantidad de residuos generados.",
+          "Aumento en la rapidez de crecimiento sin considerar la calidad del agua.",
+          "Mejora la eficiencia de la conversión alimenticia y reduce el impacto ambiental.",
+          "No tiene un impacto significativo en la sostenibilidad."
+        ]
+      },
+      {
+        "id": 13,
+        "category": "NTC-1443",
+        "question": "¿Cuál de los siguientes aspectos está regulado por la Norma NTC 1443 para la piscicultura en Colombia?",
+        "answer": "Todos los anteriores.",
+        "options": [
+          "La selección de especies para el cultivo acuícola.",
+          "El diseño de las instalaciones de piscicultura.",
+          "La calidad del agua en los estanques.",
+          "Todos los anteriores."
+        ]
+      },
+        {
+          "id": 14,
+          "category": "NTC-1443",
+          "question": "De acuerdo con la NTC 1443, ¿qué parámetro es fundamental para garantizar la salud de los peces en un estanque de piscicultura?",
+          "answer": "El nivel de oxígeno disuelto en el agua.",
+          "options": [
+            "El tamaño del estanque.",
+            "El tipo de alimento utilizado.",
+            "El nivel de oxígeno disuelto en el agua.",
+            "La frecuencia de cosecha de los peces."
+          ]
+        },
+      {
+        "id": 15,
+        "category": "NTC-1443",
+        "question": "Según la norma NTC 1443, ¿cuál es la recomendación para la gestión de residuos en piscicultura?",
+        "answer": "Los residuos deben ser utilizados como abono para cultivos agrícolas.",
+        "options": [
+          "Los residuos deben ser descartados sin ningún tratamiento.",
+          "Los residuos deben ser utilizados como abono para cultivos agrícolas.",
+          "Los residuos deben ser reciclados sin ningún tipo de proceso adicional.",
+          "Los residuos deben ser almacenados en grandes volúmenes sin ningún tratamiento."
+        ]
+      }
+      ]
+    }
