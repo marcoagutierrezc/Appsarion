@@ -12,6 +12,7 @@ COPY gradlew gradlew.bat build.gradle settings.gradle ./
 COPY gradle ./gradle
 
 # Descargar dependencias sin compilar todo
+RUN chmod +x gradlew
 RUN ./gradlew dependencies --no-daemon
 
 # Copiar el código fuente
