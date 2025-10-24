@@ -17,6 +17,10 @@ import ImageUploader from '../../components/ImageUploader';
     };
   
     const handleSubmit = async () => {
+      if (!checkedRol) {
+        Alert.alert('Error', 'Por favor, seleccione un rol.');
+        return;
+      }
       if (!justification && !supportingDocument) {
         Alert.alert('Error', 'Por favor, complete todos los campos.');
         return;
@@ -33,18 +37,19 @@ import ImageUploader from '../../components/ImageUploader';
         formData.append('password', password);
         formData.append('justification', justification);
         formData.append('role', checkedRol);
-        // formData.append('supportingDocument', supportingDocument ?? '');
-        formData.append('supportingDocument', {
-          uri: supportingDocument,
-          type: 'image/jpeg',
-          name: `${documentNumber}.jpg`,
-        });
+        // Adjuntar documento solo si existe una imagen seleccionada
+        if (supportingDocument) {
+          // @ts-expect-error: FormData de React Native acepta objeto con uri
+          formData.append('supportingDocument', {
+            uri: supportingDocument,
+            type: 'image/jpeg',
+            name: `${documentNumber}.jpg`,
+          });
+        }
 
         const response = await fetch(`${BASE_URL}/users-to-verify`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
+          // No establecer manualmente Content-Type para permitir que RN agregue el boundary
           body: formData
         });
         if (!response.ok) {
@@ -57,6 +62,7 @@ import ImageUploader from '../../components/ImageUploader';
 
       } catch (error) {
         console.error('Error en el registro:', error);
+        Alert.alert('Error', 'No fue posible completar el registro. Intenta de nuevo.');
       }
     };
   
@@ -92,7 +98,7 @@ import ImageUploader from '../../components/ImageUploader';
           <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
             <Text style={styles.buttonText}>Regresar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => navigation.toTop()}>
+          <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={() => navigation.popToTop()}>
             <Text style={styles.buttonText}>Cancelar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.finishButton]} onPress={handleSubmit}>

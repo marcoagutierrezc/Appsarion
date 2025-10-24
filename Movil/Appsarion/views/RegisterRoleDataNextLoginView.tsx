@@ -19,8 +19,8 @@ export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any 
     Piscicultor: ['estacion', 'vereda', 'departamento', 'municipio'],
     Comercializador: ['empresa', 'barrio', 'departamento', 'municipio'],
     Evaluador: ['entidad', 'cargo'],
-    Academico: ['institucion', 'programa', 'curso'],
-  };
+    'Académico': ['institucion', 'programa', 'curso'],
+  } as const;
 
   useEffect(() => {
     setListDepartamento(obtenerListaDepartamentos(data));
