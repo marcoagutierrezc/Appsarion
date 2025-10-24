@@ -1,32 +1,46 @@
-version: "2.29.2"
 services:
-  backend-epi:
-    image: backend-epi
-    container_name: backend-epi-container
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    networks:
-      - spring-network
-    depends_on:
-      - mysql
   mysql:
-    image: mysql
+    image: mysql:8.0.36
     container_name: mysql_database
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: appsariondb
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: 123456789
+      MYSQL_PASSWORD: 123456789
+      MYSQL_DATABASE: epidb
     ports:
       - "3307:3306"
     networks:
       - spring-network
     volumes:
       - mysql-volume:/var/lib/mysql
+      - ./dump:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p1234556789 --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend-epi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-epi-container
+    image: backend-epi
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - spring-network
+    volumes:
+      - ./uploads:/app/uploads
+
 networks:
   spring-network:
+
 volumes:
   mysql-volume:
