@@ -6,21 +6,21 @@ import {
   StyleSheet,
   Alert,
   Button,
+  TextInput,
+  Keyboard,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { TextInput } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import * as Location from 'expo-location';
 import { BASE_URL } from '../../services/connection/connection';
 import { obtenerCiudadesPorDepartamento, obtenerListaDepartamentos } from '../../utils/filters';
 import data from '../../data/colombia.json';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FormScreenWrapper from '../../components/FormScreenWrapper'; 
 
 export function RegisterLotDataView({ route, navigation }: any) {
   const idRole = useSelector((state: RootState) => state.auth.user?.idRole);
-  const rol = useSelector((state: RootState) => state.auth.user.role.toLowerCase());
+  const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
 
   const [citiesFilter, setCitiesFilter] = useState<string[]>([]);
   const [listDepartamento, setListDepartamento] = useState<string[]>([]);
@@ -30,24 +30,23 @@ export function RegisterLotDataView({ route, navigation }: any) {
   const [selectedMunicipio, setSelectedMunicipio] = useState('');
   const [barrio, setBarrio] = useState('');
   const [vereda, setVereda] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const loteRef = useRef<any>(null);
-  const coordenadasRef = useRef<any>(null);
-  const departamentoRef = useRef<any>(null);
-  const municipioRef = useRef<any>(null);
-  const barrioRef = useRef<any>(null);
-  const veredaRef = useRef<any>(null);
+  // Removed focus chaining refs to avoid focusing non-editable inputs and reduce IME edge cases
+
+  const mountedRef = useRef(true);
 
   useEffect(() => {
     setListDepartamento(obtenerListaDepartamentos(data));
-    const timer = setTimeout(() => {
-      loteRef.current?.focus();
-    }, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   useEffect(() => {
     setCitiesFilter(obtenerCiudadesPorDepartamento(selectedDepartamento, data));
+    // Reset municipio when departamento changes to avoid inconsistent state
+    setSelectedMunicipio('');
   }, [selectedDepartamento]);
 
   const obtenerCoordenadas = async () => {
@@ -58,8 +57,19 @@ export function RegisterLotDataView({ route, navigation }: any) {
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
-      setCoordenadas(`${location.coords.latitude}, ${location.coords.longitude}`);
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        Alert.alert('Ubicación desactivada', 'Activa los servicios de ubicación en tu dispositivo e inténtalo de nuevo.');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+        mayShowUserSettingsDialog: true,
+      });
+      if (mountedRef.current) {
+        setCoordenadas(`${location.coords.latitude}, ${location.coords.longitude}`);
+      }
     } catch (error) {
       console.error('Error al obtener coordenadas:', error);
       Alert.alert('Error', 'No se pudieron obtener las coordenadas.');
@@ -71,14 +81,22 @@ export function RegisterLotDataView({ route, navigation }: any) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
       return;
     }
+    const rol = normalizeRole(userRole);
+    if (!rol || !idRole) {
+      Alert.alert('Sesión requerida', 'No encontramos la información del usuario. Vuelve a iniciar sesión.');
+      return;
+    }
     try {
+      if (submitting) return;
+      setSubmitting(true);
+      Keyboard.dismiss();
       const LotData = {
-        lotName: lote,
-        coordinates: coordenadas,
-        department: selectedDepartamento,
-        municipality: selectedMunicipio,
-        neighborhood: barrio,
-        vereda: vereda,
+        lotName: lote.trim(),
+        coordinates: coordenadas.trim(),
+        department: selectedDepartamento.trim(),
+        municipality: selectedMunicipio.trim(),
+        neighborhood: barrio.trim(),
+        vereda: vereda.trim(),
       };
 
       const response = await fetch(`${BASE_URL}/fish_lot/${rol}/${idRole}`, {
@@ -88,41 +106,43 @@ export function RegisterLotDataView({ route, navigation }: any) {
       });
 
       if (!response.ok) {
-        throw new Error('Error en el servicio de registro de Lotes');
+        const msg = await response.text().catch(() => 'Error en el servicio de registro de Lotes');
+        throw new Error(msg || 'Error en el servicio de registro de Lotes');
       }
-      navigation.navigate('Lotes');
+      // Defer navigation to the next frame to avoid setState-after-unmount and navigation race conditions
+      await new Promise((r) => setTimeout(r, 0));
+      if (navigation?.navigate) {
+        navigation.navigate('Drawer', { screen: 'Lotes' });
+      }
     } catch (error) {
       console.error('Error en el registro del Lote:', error);
+      Alert.alert('Error', (error as any)?.message ?? 'No se pudo registrar el lote.');
+    } finally {
+      if (mountedRef.current) {
+        setSubmitting(false);
+      }
     }
   };
 
   return (
     <FormScreenWrapper>
+      <Text style={styles.fieldLabel}>Nombre del Lote</Text>
       <TextInput
-        label="Nombre del Lote"
         value={lote}
         onChangeText={setLote}
-        mode="outlined"
-        style={styles.input}
-        ref={loteRef}
-        returnKeyType="next"
-        onSubmitEditing={() => coordenadasRef.current?.focus()}
+        style={[styles.input, styles.textInput]}
       />
 
+      <Text style={styles.fieldLabel}>Coordenadas</Text>
       <TextInput
-        ref={coordenadasRef}
         value={coordenadas}
-        onChangeText={setCoordenadas}
-        placeholder="Coordenadas"
-        style={styles.input}
-        returnKeyType="next"
-        onSubmitEditing={() => departamentoRef.current?.focus()}
+        editable={false}
+        style={[styles.input, styles.textInput, styles.readonly]}
       />
       <Button title="Obtener Coordenadas" onPress={obtenerCoordenadas} />
   
       <Text style={styles.label}>Departamento</Text>
       <Picker
-        ref={departamentoRef}
         selectedValue={selectedDepartamento}
         onValueChange={(itemValue) => setSelectedDepartamento(itemValue)}
       >
@@ -134,7 +154,6 @@ export function RegisterLotDataView({ route, navigation }: any) {
   
       <Text style={styles.label}>Municipio</Text>
       <Picker
-        ref={municipioRef}
         selectedValue={selectedMunicipio}
         onValueChange={(itemValue) => setSelectedMunicipio(itemValue)}
       >
@@ -144,25 +163,25 @@ export function RegisterLotDataView({ route, navigation }: any) {
         ))}
       </Picker>
   
+      <Text style={styles.fieldLabel}>Barrio</Text>
       <TextInput
-        label="Barrio"
         value={barrio}
         onChangeText={setBarrio}
-        mode="outlined"
-        style={styles.input}
-        ref={barrioRef}
-        returnKeyType="next"
-        onSubmitEditing={() => veredaRef.current?.focus()}
+        style={[styles.input, styles.textInput]}
+        autoCorrect={false}
+        autoCapitalize="words"
       />
       
+      <Text style={styles.fieldLabel}>Vereda</Text>
       <TextInput
-        label="Vereda"
         value={vereda}
         onChangeText={setVereda}
-        mode="outlined"
-        style={styles.input}
-        ref={veredaRef}
-        returnKeyType="done"
+        multiline
+        numberOfLines={3}
+        textAlignVertical="top"
+        style={[styles.input, styles.textArea]}
+        autoCorrect={false}
+        autoCapitalize="words"
       />
   
       <View style={styles.row}>
@@ -175,12 +194,27 @@ export function RegisterLotDataView({ route, navigation }: any) {
         <TouchableOpacity
           style={[styles.button, styles.finishButton]}
           onPress={handleSubmit}
+          disabled={submitting}
         >
-          <Text style={styles.buttonText}>Finalizar</Text>
+          <Text style={styles.buttonText}>{submitting ? 'Enviando...' : 'Finalizar'}</Text>
         </TouchableOpacity>
       </View>
     </FormScreenWrapper>
   );
+}
+
+function normalizeRole(role: string): string {
+  if (!role) return '';
+  const base = role
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  if (base.includes('admin')) return 'admin';
+  if (base.includes('piscicultor')) return 'piscicultor';
+  if (base.includes('comercializador')) return 'comercializador';
+  if (base.includes('evaluador') || base.includes('agente')) return 'evaluador';
+  if (base.includes('academico')) return 'academico';
+  return base;
 }
 
 const styles = StyleSheet.create({
@@ -194,9 +228,36 @@ const styles = StyleSheet.create({
   input: {
     marginBottom: 10,
   },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+  },
+  textArea: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 80,
+    backgroundColor: '#fff',
+  },
+  readonly: {
+    backgroundColor: '#f5f5f5',
+  },
   label: {
     marginTop: 10,
     fontWeight: 'bold',
+  },
+  fieldLabel: {
+    marginTop: 6,
+    marginBottom: 6,
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
   },
   row: {
     flexDirection: 'row',

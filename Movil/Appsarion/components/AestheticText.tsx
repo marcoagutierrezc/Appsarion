@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { commonColors } from '../styles/commonStyles';
 
 interface AestheticTextProps {
   title?: string;
@@ -11,13 +12,13 @@ interface AestheticTextProps {
 const AestheticText: React.FC<AestheticTextProps> = ({
   title,
   content,
-  titleColor = '#fff',
-  contentColor = '#fff',
+  titleColor = commonColors.textPrimary,
+  contentColor = commonColors.textPrimary,
 }) => {
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
-      <View style={styles.underline} />
+      {title && <Text style={[styles.title, { color: titleColor }]}>{title}</Text>}
+      {title && <View style={styles.underline} />}
       <Text style={[styles.content, { color: contentColor }]}>{content}</Text>
     </View>
   );
@@ -25,29 +26,33 @@ const AestheticText: React.FC<AestheticTextProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    backgroundColor: '#FFF5',
-    borderRadius: 10,
+    padding: 16,
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: commonColors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
   },
   underline: {
-    height: 2,
-    backgroundColor: '#4A90E2',
-    width: 50,
-    marginBottom: 15,
+    height: 3,
+    backgroundColor: commonColors.primary,
+    width: 40,
+    marginBottom: 12,
+    borderRadius: 2,
   },
   content: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
   },
 });
 

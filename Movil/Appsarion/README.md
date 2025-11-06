@@ -21,11 +21,15 @@ This project has been updated to align dependencies with a modern Expo SDK while
 3. Install dependencies:
    - `npm install`
 4. Sync native projects after config changes:
-   - `npx expo prebuild --clean` (Optional, but recommended after config edits)
+  - `npm run prebuild:android` (fast sync without reinstall)
+  - Or: `npm run prebuild` to sync both platforms
 5. Run Android:
    - `npm run android`
 
 ## Notes
+- This repo contains native folders (android/). When you edit native-related fields in `app.json` (orientation, splash, android, ios, plugins), run one of the prebuild scripts to sync changes:
+  - `npm run prebuild` (both platforms), `npm run prebuild:android`, or `npm run prebuild:ios`.
+  - These scripts use `--no-install` to keep runs fast; run `npm install` separately when you change dependencies.
 - If `.expo/` is already tracked by git, run: `git rm -r --cached .expo` to stop tracking it (it's already in `.gitignore`).
 - If you still see a `java.lang.String cannot be cast to java.lang.Boolean` crash, please capture the full stack trace. Typical root causes:
   - Missing peer dependencies (fixed above).

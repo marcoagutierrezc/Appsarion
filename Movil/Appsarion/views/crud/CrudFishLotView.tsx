@@ -1,27 +1,71 @@
 import React, { useState, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Alert, FlatList, ListRenderItemInfo } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { RootState } from '../../store';
-import FishLotCard, { FishLot } from '../../components/FishLotCard';
+import FishLotCard from '../../components/FishLotCard';
+type FishLot = { id: number; lotName: string; neighborhood: string };
 import { BASE_URL } from '../../services/connection/connection';
 
 export function CrudFishLotView({ navigation }: any) {
-  const rol = useSelector((state: RootState) => state.auth.user.role.toLowerCase());
+  const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
+  const rol = normalizeRole(userRole);
   const userId = useSelector((state: RootState) => state.auth.user?.idRole);
   const [fishLots, setFishLots] = useState<FishLot[]>([]);
 
+  function normalizeRole(role: string): string {
+    if (!role) return '';
+    const base = role
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); // remove accents
+    // explicit mapping to be safe with backend slugs
+    if (base.includes('admin')) return 'admin';
+    if (base.includes('piscicultor')) return 'piscicultor';
+    if (base.includes('comercializador')) return 'comercializador';
+    if (base.includes('evaluador') || base.includes('agente')) return 'evaluador';
+    if (base.includes('academico')) return 'academico';
+    return base;
+  }
+
   // Función para cargar los lotes según el rol
-  const loadFishLots = async () => {
+  const loadFishLots = async (isActiveRef?: { current: boolean }) => {
     try {
-      let endpoint = `${BASE_URL}/fish_lot/${rol}/${userId}`;
+      if (!rol) {
+        Alert.alert('Sesión requerida', 'No encontramos tu rol de usuario. Vuelve a iniciar sesión.');
+        return;
+      }
+      if (rol !== 'admin' && !userId) {
+        Alert.alert('Error', 'El ID del usuario es necesario para cargar los lotes.');
+        return;
+      }
+
+      // If backend does not support admin listing, avoid calling an invalid endpoint
+      if (rol === 'admin' && !userId) {
+        setFishLots([]);
+        return;
+      }
+
+      const endpoint = `${BASE_URL}/fish_lot/${rol}/${userId}`;
 
       const response = await fetch(endpoint);
       if (!response.ok) {
         throw new Error('No se pudo obtener la lista de lotes de pescado.');
       }
       const data = await response.json();
-      setFishLots(data);
+      const rawList = Array.isArray(data) ? data : [];
+      if (!Array.isArray(data)) {
+        console.warn('Respuesta inesperada para lotes:', data);
+      }
+      // Sanitize list to avoid runtime crashes due to missing fields
+      const list: FishLot[] = rawList
+        .map((it: any) => ({
+          id: Number(it?.id),
+          lotName: String(it?.lotName ?? it?.name ?? 'Lote'),
+          neighborhood: String(it?.neighborhood ?? it?.barrio ?? ''),
+        }))
+        .filter((it: any) => Number.isFinite(it.id));
+      if (!isActiveRef || isActiveRef.current) setFishLots(list);
     } catch (error) {
       Alert.alert('Error', 'Hubo un problema al cargar los lotes.');
     }
@@ -30,25 +74,30 @@ export function CrudFishLotView({ navigation }: any) {
   // Recargar lotes
   useFocusEffect(
     useCallback(() => {
+      const isActiveRef = { current: true };
       if (rol !== 'admin' && !userId) {
         Alert.alert('Error', 'El ID del usuario es necesario para cargar los lotes.');
-        return;
+        return () => { isActiveRef.current = false; };
       }
-      loadFishLots();
+      loadFishLots(isActiveRef);
+      return () => { isActiveRef.current = false; };
     }, [rol, userId])
+  );
+
+  const renderItem = ({ item }: ListRenderItemInfo<FishLot>) => (
+    <FishLotCard fishLot={item} navigation={navigation} />
   );
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {fishLots.map((fishLot) => (
-          <FishLotCard
-            key={fishLot.id}
-            fishLot={fishLot}
-            navigation={navigation}
-          />
-        ))}
-      </ScrollView>
+      <FlatList
+        data={Array.isArray(fishLots) ? fishLots : []}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={renderItem}
+        removeClippedSubviews
+        initialNumToRender={8}
+        windowSize={5}
+      />
 
       <TouchableOpacity
         style={styles.floatingButton}

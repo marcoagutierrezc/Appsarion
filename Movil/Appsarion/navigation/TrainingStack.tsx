@@ -4,6 +4,7 @@ import { TrainingView, ExamPreview, GeneralAspectsScreen, FloorAndSpondsScreen, 
 import QuizView from "../training/QuizView";
 import crudQuiz from "../training/crudQuiz";
 import { ResultsScreen } from "../training/Results";
+import QuizSummary from "../training/QuizSummary";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,13 +14,14 @@ const TrainingStack = () => {
       <Stack.Screen name="TrainingHome" component={TrainingView} />
       <Stack.Screen name="Prueba" component={ExamPreview} />
       <Stack.Screen name="Quiz" component={QuizView} />
-      <Stack.Screen name="Resultados" component={ResultsScreen} />
+  <Stack.Screen name="Resumen" component={QuizSummary} />
+  {/* Ocultamos certificados eliminando la ruta visible Resultados. Dejamos ResultsScreen no registrado en la barra. */}
       <Stack.Screen name="Gestión" component={crudQuiz} />
-      <Stack.Screen name="Aspectos Generales" component={GeneralAspectsScreen} options={{headerShown: true, title:''}} />
-      <Stack.Screen name="Suelos y Estanques" component={FloorAndSpondsScreen}  options={{headerShown: true, title:''}}/>
-      <Stack.Screen name="Cosecha y Post producción" component={HarvestAndPostproductionScreen}  options={{headerShown: true, title:''}}/>
-      <Stack.Screen name="Buenas Practicas" component={GoodPracticesScreen}  options={{headerShown: true, title:''}}/>
-      <Stack.Screen name="NTC 1443" component={NTC1443Screen}  options={{headerShown: true, title:''}}/>
+      <Stack.Screen name="Aspectos Generales" component={GeneralAspectsScreen} />
+      <Stack.Screen name="Suelos y Estanques" component={FloorAndSpondsScreen} />
+      <Stack.Screen name="Cosecha y Post producción" component={HarvestAndPostproductionScreen} />
+      <Stack.Screen name="Buenas Practicas" component={GoodPracticesScreen} />
+      <Stack.Screen name="NTC 1443" component={NTC1443Screen} />
     </Stack.Navigator>
   );
 };

@@ -10,9 +10,12 @@ import {
   Alert,
   ActivityIndicator
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {NavbarQuiz} from '../components/NavbarQuiz';
 import { BASE_URL } from '../services/connection/connection';
+import { commonColors, commonStyles } from '../styles/commonStyles';
 
 interface Category{
   id: string;
@@ -119,12 +122,28 @@ export default function QuizManagement({navigation}: any) {
 
   // Componente principal de lista de preguntas
   const QuestionsList = () => (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
+      <View style={styles.headerSection}>
+        <Text style={styles.sectionTitle}>Gestión de Preguntas</Text>
         <TouchableOpacity style={styles.addButton} onPress={() => handleAddQuestion()}>
-          <Text style={styles.addButtonText}>Agregar Pregunta +</Text>
+          <MaterialCommunityIcons name="plus" size={20} color="#fff" />
+          <Text style={styles.addButtonText}>Agregar</Text>
         </TouchableOpacity>
       </View>
+
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={commonColors.primary} />
+        </View>
+      )}
+
+      {questions.length === 0 && !loading && (
+        <View style={styles.emptyState}>
+          <MaterialCommunityIcons name="file-document-outline" size={48} color={commonColors.textSecondary} />
+          <Text style={styles.emptyText}>No hay preguntas registradas</Text>
+        </View>
+      )}
+
       {questions.map((question) => (
         <View key={question.id} style={styles.questionCard}>
           <TouchableOpacity
@@ -133,37 +152,46 @@ export default function QuizManagement({navigation}: any) {
               expandedQuestion === question.id ? null : question.id
             )}
           >
-            <Text style={styles.questionTitle}>
-              {`Pregunta ${question.id}`}
-            </Text>
+            <View style={styles.questionTitleContainer}>
+              <MaterialCommunityIcons name={expandedQuestion === question.id ? 'chevron-down' : 'chevron-right'} size={24} color={commonColors.primary} />
+              <View>
+                <Text style={styles.questionTitle}>{`Pregunta ${question.id}`}</Text>
+                <Text style={styles.categoryBadge}>{question.categoryName}</Text>
+              </View>
+            </View>
             <TouchableOpacity
               onPress={() => handleEditQuestion(question)}
-              style={styles.editButton}
+              style={styles.editIconButton}
             >
-              <Text>✏️</Text>
+              <MaterialCommunityIcons name="pencil" size={20} color={commonColors.primary} />
             </TouchableOpacity>
           </TouchableOpacity>
 
           {expandedQuestion === question.id && (
             <View style={styles.answersGrid}>
-              <Text style={styles.questionText}>Categoría: {question.categoryName}</Text>
-              <Text style={styles.questionText}>{question.questionText}</Text>
+              <Text style={styles.questionContent}>{question.questionText}</Text>
               {question.answers?.length > 0 ? (
-                question.answers.map((answer, index) => (
-                  <View
-                    key={answer.id}
-                    style={[
-                      styles.answerBox,
-                      answer.isCorrect && styles.correctAnswer
-                    ]}
-                  >
-                    <Text style={styles.answerText}>
-                      {`${String.fromCharCode(65 + index)}. ${answer.answerText}`}
-                    </Text>
-                  </View>
-                ))
+                <View style={styles.answersContainer}>
+                  {question.answers.map((answer, index) => (
+                    <View
+                      key={answer.id}
+                      style={[
+                        styles.answerBox,
+                        answer.isCorrect && styles.correctAnswer
+                      ]}
+                    >
+                      <View style={styles.answerRow}>
+                        <Text style={styles.answerIndex}>{String.fromCharCode(65 + index)}</Text>
+                        <Text style={[styles.answerText, answer.isCorrect && styles.correctAnswerText]}>
+                          {answer.answerText}
+                        </Text>
+                        {answer.isCorrect && <MaterialCommunityIcons name="check-circle" size={20} color={commonColors.success} style={{ marginLeft: 8 }} />}
+                      </View>
+                    </View>
+                  ))}
+                </View>
               ) : (
-                <Text>No hay respuestas disponibles</Text>
+                <Text style={styles.noAnswersText}>No hay respuestas disponibles</Text>
               )}
             </View>
           )}
@@ -179,18 +207,21 @@ export default function QuizManagement({navigation}: any) {
       animationType="slide"
       transparent
     >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
+      <SafeAreaView style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Editar Pregunta</Text>
-            <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-              <Text style={styles.closeButton}>✕</Text>
+            <TouchableOpacity 
+              onPress={() => setEditModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <MaterialCommunityIcons name="close" size={24} color={commonColors.textPrimary} />
             </TouchableOpacity>
           </View>
 
           {selectedQuestion && (
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.label}>Categoría:</Text>
+              <Text style={styles.modalLabel}>Categoría:</Text>
               <Picker
                 selectedValue={selectedQuestion}
                 onValueChange={(itemValue) => setSelectedQuestion(itemValue)}
@@ -206,39 +237,40 @@ export default function QuizManagement({navigation}: any) {
                 ))}
               </Picker>
 
-              <Text style={styles.label}>Pregunta:</Text>
-              <Text style={styles.questionText}>{selectedQuestion.questionText}</Text>
+              <Text style={styles.modalLabel}>Pregunta:</Text>
+              <Text style={styles.selectedQuestionText}>{selectedQuestion.questionText}</Text>
 
+              <Text style={styles.modalLabel}>Respuestas:</Text>
               <View style={styles.answersContainer}>
                 {selectedQuestion.answers.map((answer, index) => (
-                  <View key={answer.id} style={styles.answerItem}>
-                    <Text style={styles.answerLabel}>
+                  <View key={answer.id} style={styles.answerItemRow}>
+                    <Text style={styles.answerItemLabel}>
                       {`${String.fromCharCode(65 + index)}. ${answer.answerText}`}
                     </Text>
-                    <TouchableOpacity
-                      style={[
-                        styles.checkbox,
-                        answer.isCorrect && styles.checkboxChecked,
-                      ]}
-                    >
-                      {answer.isCorrect && <Text style={styles.checkmark}>✓</Text>}
-                    </TouchableOpacity>
+                    <View style={[
+                      styles.checkbox,
+                      answer.isCorrect && styles.checkboxChecked,
+                    ]}>
+                      {answer.isCorrect && <MaterialCommunityIcons name="check" size={16} color="#fff" />}
+                    </View>
                   </View>
                 ))}
               </View>
 
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={[styles.button, styles.editButton]}>
-                  <Text style={styles.buttonText}>Editar</Text>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity style={[styles.modalButton, styles.editActionButton]}>
+                  <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
+                  <Text style={styles.modalButtonText}>Editar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, styles.deleteButton]}>
-                  <Text style={styles.buttonText}>Eliminar</Text>
+                <TouchableOpacity style={[styles.modalButton, styles.deleteActionButton]}>
+                  <MaterialCommunityIcons name="trash-can" size={18} color="#fff" />
+                  <Text style={styles.modalButtonText}>Eliminar</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
           )}
         </View>
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 
@@ -301,28 +333,31 @@ export default function QuizManagement({navigation}: any) {
           { answerText: '', isCorrect: false },
           { answerText: '', isCorrect: false },
         ]);
-      } catch (error) {
-        alert(error.message);
+      } catch (error: any) {
+        alert((error as Error).message);
       }
     };
   
     return (
       <Modal visible={newQuestionModalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+        <SafeAreaView style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Nueva Pregunta</Text>
-              <TouchableOpacity onPress={() => setNewQuestionModalVisible(false)}>
-                <Text style={styles.closeButton}>✕</Text>
+              <TouchableOpacity 
+                onPress={() => setNewQuestionModalVisible(false)}
+                style={styles.closeButton}
+              >
+                <MaterialCommunityIcons name="close" size={24} color={commonColors.textPrimary} />
               </TouchableOpacity>
             </View>
   
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.label}>Categoría:</Text>
+              <Text style={styles.modalLabel}>Categoría:</Text>
               <Picker
                 selectedValue={selectedCategory}
                 onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-                style={styles.picker}
+                style={styles.modalPicker}
               >
                 <Picker.Item label="Selecciona una categoría..." value="" />
                 {categories.map((category: any) => (
@@ -334,20 +369,22 @@ export default function QuizManagement({navigation}: any) {
                 ))}
               </Picker>
   
-              <Text style={styles.label}>Pregunta:</Text>
+              <Text style={styles.modalLabel}>Pregunta:</Text>
               <TextInput
-                style={styles.questionInput}
+                style={[styles.textInput, { minHeight: 100, textAlignVertical: 'top' }]}
                 multiline
                 placeholder="Escriba la pregunta aquí"
+                placeholderTextColor={commonColors.textSecondary}
                 value={questionText}
                 onChangeText={setQuestionText}
               />
   
               {answers.map((answer, index) => (
-                <View key={index} style={styles.answerContainer}>
+                <View key={index} style={styles.newAnswerContainer}>
                   <TextInput
-                    style={styles.answerInput}
+                    style={[styles.textInput, { flex: 1 }]}
                     placeholder={`Respuesta ${String.fromCharCode(65 + index)}`}
+                    placeholderTextColor={commonColors.textSecondary}
                     value={answer.answerText}
                     onChangeText={(text) => {
                       const updatedAnswers = [...answers];
@@ -356,38 +393,42 @@ export default function QuizManagement({navigation}: any) {
                     }}
                   />
                   <TouchableOpacity
-                    style={styles.checkbox}
+                    style={[
+                      styles.checkbox,
+                      answer.isCorrect && styles.checkboxChecked,
+                    ]}
                     onPress={() => {
-                      // Marca solo la respuesta seleccionada como correcta y desmarca las demás
                       const updatedAnswers = answers.map((ans, i) => ({
                         ...ans,
-                        isCorrect: i === index, // Solo la respuesta seleccionada será verdadera
+                        isCorrect: i === index,
                       }));
                       setAnswers(updatedAnswers);
                     }}
                   >
-                    <Text>{answer.isCorrect ? '✔ Correcta' : 'Respuesta correcta'}</Text>
+                    {answer.isCorrect && <MaterialCommunityIcons name="check" size={14} color="#fff" />}
                   </TouchableOpacity>
                 </View>
               ))}
   
-              <View style={styles.buttonContainer}>
+              <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
-                  style={[styles.button, styles.saveButton]}
+                  style={[styles.modalButton, styles.editActionButton]}
                   onPress={handleSaveQuestion}
                 >
-                  <Text style={styles.buttonText}>Guardar</Text>
+                  <MaterialCommunityIcons name="check" size={18} color="#fff" />
+                  <Text style={styles.modalButtonText}>Guardar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
+                  style={[styles.modalButton, styles.deleteActionButton]}
                   onPress={() => setNewQuestionModalVisible(false)}
                 >
-                  <Text style={styles.buttonText}>Cancelar</Text>
+                  <MaterialCommunityIcons name="close" size={18} color="#fff" />
+                  <Text style={styles.modalButtonText}>Cancelar</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
           </View>
-        </View>
+        </SafeAreaView>
       </Modal>
     );
   };
@@ -405,236 +446,283 @@ export default function QuizManagement({navigation}: any) {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: commonColors.background,
   },
-  container: {
+  scrollContainer: {
     flex: 1,
   },
-  header: {
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 100,
+  },
+
+  /* Header Section */
+  headerSection: {
     flexDirection: 'row',
-    padding: 16,
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 4,
   },
-  pickerContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginRight: 16,
-  },
-  picker: {
-    height: 60,
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: commonColors.textPrimary,
   },
   addButton: {
-    backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 4,
+    backgroundColor: commonColors.success,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   addButtonText: {
     color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
+
+  /* Loading & Empty States */
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 300,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 300,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: commonColors.textSecondary,
+  },
+
+  /* Question Card */
   questionCard: {
-    margin: 8,
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
+    borderColor: commonColors.border,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
   questionHeader: {
     flexDirection: 'row',
-    padding: 12,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: '#f9f9f9',
+  },
+  questionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
   },
   questionTitle: {
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 15,
+    color: commonColors.textPrimary,
   },
+  categoryBadge: {
+    fontSize: 12,
+    color: commonColors.textSecondary,
+    fontWeight: '500',
+  },
+  editIconButton: {
+    padding: 4,
+  },
+
+  /* Answers Grid */
   answersGrid: {
-    padding: 8,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    padding: 12,
+    backgroundColor: commonColors.background,
+  },
+  questionContent: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: commonColors.textPrimary,
+    marginBottom: 12,
+    lineHeight: 22,
+  },
+  answersContainer: {
+    gap: 8,
   },
   answerBox: {
-    width: '48%',
-    margin: '1%',
-    padding: 12,
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
+    borderColor: commonColors.border,
+    padding: 10,
   },
   correctAnswer: {
-    backgroundColor: "green", // ✅ Resalta en verde si es correcta
+    backgroundColor: '#f0f8f0',
+    borderColor: commonColors.success,
+  },
+  answerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  answerIndex: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: commonColors.primary,
+    backgroundColor: '#f0f5ff',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    minWidth: 30,
+    textAlign: 'center',
   },
   answerText: {
-    color: "black",
-    fontWeight: 'bold',
+    fontSize: 14,
+    color: commonColors.textPrimary,
+    flex: 1,
+    fontWeight: '500',
+  },
+  correctAnswerText: {
+    color: commonColors.success,
+    fontWeight: '600',
+  },
+  noAnswersText: {
+    fontSize: 14,
+    color: commonColors.textSecondary,
+    fontStyle: 'italic',
+  },
+
+  /* Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '90%',
-    maxHeight: '80%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    overflow: 'hidden',
+    backgroundColor: commonColors.cardBackground,
+    marginTop: 0,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: commonColors.border,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: commonColors.textPrimary,
   },
   closeButton: {
-    fontSize: 24,
-    color: '#666',
+    padding: 4,
   },
   modalBody: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  modalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: commonColors.textPrimary,
     marginBottom: 8,
   },
   modalPicker: {
     height: 60,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    marginBottom: 12,
   },
-  questionText: {
-    color: '#000000',
-    fontSize: 16,
-    marginBottom: 16,
+  selectedQuestionText: {
+    fontSize: 14,
+    color: commonColors.textPrimary,
+    marginBottom: 12,
+    lineHeight: 20,
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    borderRadius: 6,
   },
-  answersContainer: {
-    marginBottom: 16,
-  },
-  answerItem: {
+  answerItemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 6,
     marginBottom: 8,
   },
-  answerLabel: {
+  answerItemLabel: {
+    fontSize: 13,
+    color: commonColors.textPrimary,
     flex: 1,
+    fontWeight: '500',
   },
   checkbox: {
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: '#666',
+    borderColor: commonColors.border,
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: commonColors.primary,
+    borderColor: commonColors.primary,
   },
-  checkmark: {
-    color: '#fff',
-    fontSize: 16,
+  modalButtonContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 0,
+    marginBottom: 20,
   },
-  questionInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    padding: 12,
-    marginBottom: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  imageUpload: {
-    height: 150,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    marginBottom: 16,
+  modalButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 6,
   },
-  uploadButton: {
-    padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 4,
+  editActionButton: {
+    backgroundColor: commonColors.primary,
   },
-  uploadButtonText: {
-    color: '#666',
+  deleteActionButton: {
+    backgroundColor: commonColors.danger,
   },
-  answerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  answerInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    padding: 12,
-    marginRight: 12,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-  },
-  button: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 4,
-    alignItems: 'center',
-    marginHorizontal: 8,
-  },
-  saveButton: {
-    backgroundColor: '#4CAF50',
-  },
-  editButton: {
-    padding: 4,
-    backgroundColor: '#2196F3',
-  },
-  deleteButton: {
-    backgroundColor: '#f44336',
-  },
-  cancelButton: {
-    backgroundColor: '#f44336',
-  },
-  buttonText: {
+  modalButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontWeight: '600',
+    fontSize: 14,
   },
-  tabBar: {
+
+  /* Additional Styles for New Question Modal */
+  textInput: {
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: commonColors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+    fontSize: 14,
+    color: commonColors.textPrimary,
+  },
+  newAnswerContainer: {
     flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  tab: {
-    flex: 1,
-    padding: 16,
     alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: '#e3f2fd',
-  },
-  tabText: {
-    color: '#666',
-  },
-  activeTabText: {
-    color: '#1976d2',
+    gap: 8,
+    marginBottom: 12,
   },
 });

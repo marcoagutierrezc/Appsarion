@@ -1,28 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Platform, ActivityIndicator, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavbarQuiz } from '../components/NavbarQuiz';
 import { BASE_URL } from '../services/connection/connection';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Buffer } from "buffer";
-
-import * as IntentLauncher from 'expo-intent-launcher';
-global.Buffer = Buffer;
+import { commonColors, commonStyles } from '../styles/commonStyles';
 
 
 export function ResultsScreen({ navigation }: any) {
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [downloading, setDownloading] = useState<number | null>(null);
   const id_user = useSelector((state: RootState) => state.auth.user?.id);
 
 
   useEffect(() => {
-    if (id_user) fetchCertificates();
+    let isActive = true;
+    const run = async () => {
+      if (id_user) await fetchCertificates(isActive);
+    };
+    run();
+    return () => { isActive = false; };
   }, [id_user]);
 
-  const fetchCertificates = async () => {
+  const fetchCertificates = async (isActive?: boolean) => {
     try {
       const response = await fetch(`${BASE_URL}/certificates/user/${id_user}`, {
         method: 'GET',
@@ -32,55 +37,42 @@ export function ResultsScreen({ navigation }: any) {
       if (!response.ok) throw new Error('Error al obtener los certificados.');
 
       const data = await response.json();
-      setCertificates(data);
+      if (isActive !== false) setCertificates(data);
     } catch (error) {
       console.error('Error fetching certificates:', error);
       Alert.alert('Error', 'No se pudieron obtener los certificados.');
     } finally {
-      setLoading(false);
+      if (isActive !== false) setLoading(false);
     }
   };
 
-const handleDownload = async (evaluationId: number) => {
-  try {
-    const fileUri = `${FileSystem.documentDirectory}certificado_${evaluationId}.pdf`;
+  const handleDownload = async (evaluationId: number) => {
+    try {
+      setDownloading(evaluationId);
+      const destDir = new Directory(Paths.document, 'certificados');
+      destDir.create({ idempotent: true, intermediates: true });
+      const destFile = new File(destDir, `certificado_${evaluationId}.pdf`);
 
-    const response = await fetch(`${BASE_URL}/certificates/download/${evaluationId}`);
-    if (!response.ok) throw new Error('Error al descargar el certificado.');
+      await File.downloadFileAsync(`${BASE_URL}/certificates/download/${evaluationId}`, destFile, { idempotent: true });
 
-    // Convertimos la respuesta a un arrayBuffer y luego a Base64
-    const arrayBuffer = await response.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString('base64');
+      Alert.alert('✓ Descarga completada', 'El certificado se ha guardado correctamente.');
 
-    // Guardamos el archivo localmente
-    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    Alert.alert('Descarga completada', 'El certificado se ha guardado.');
-
-    // 📂 Intentar abrir el archivo automáticamente
-    if (Platform.OS === 'android') {
-      const cUri = await FileSystem.getContentUriAsync(fileUri);
-      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-        data: cUri,
-        flags: 1,
-        type: 'application/pdf',
-      });
-    } else if (Platform.OS === 'ios') {
-      await Sharing.shareAsync(fileUri);
+      await Sharing.shareAsync(destFile.uri, { mimeType: 'application/pdf' });
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      Alert.alert('Error', 'No se pudo descargar el certificado.');
+    } finally {
+      setDownloading(null);
     }
-
-  } catch (error) {
-    console.error('Error downloading certificate:', error);
-    Alert.alert('Error', 'No se pudo descargar el certificado.');
-  }
-};
+  };
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text>Cargando certificados...</Text>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={commonColors.primary} />
+          <Text style={styles.loadingText}>Cargando certificados...</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -88,54 +80,236 @@ const handleDownload = async (evaluationId: number) => {
   if (certificates.length === 0) {
     return (
       <>
-      <SafeAreaView style={styles.container}>
-        <Text>No tienes certificados aprobados.</Text>
-      </SafeAreaView>
-      <NavbarQuiz navigation={navigation} />
+        <SafeAreaView style={styles.container}>
+          <ScrollView contentContainerStyle={styles.emptyContainer}>
+            <View style={styles.emptyIconContainer}>
+              <MaterialCommunityIcons name="medal" size={64} color={commonColors.textSecondary} />
+            </View>
+            <Text style={styles.emptyTitle}>No tienes certificados aún</Text>
+            <Text style={styles.emptySubtitle}>Completa los exámenes para obtener tus certificados</Text>
+          </ScrollView>
+        </SafeAreaView>
+        <NavbarQuiz navigation={navigation} />
       </>
     );
   }
 
   return (
-  <>
-    <SafeAreaView style={styles.container}>
-      <View>
-        <Text style={styles.title}>Certificados Aprobados</Text>
-        <FlatList
-          data={certificates}
-          keyExtractor={(item, index) => (item?.id ? item.id.toString() : index.toString())}
-          renderItem={({ item }) => (
-            <View style={styles.certificateCard}>
-              <Text style={styles.certTitle}>{item.id}</Text>
-              <Text style={styles.certDate}>Fecha: {item.issuedAt}</Text>
-              <TouchableOpacity
-                style={styles.downloadButton}
-                onPress={() => item.id ? handleDownload(item.id) : console.error("ID de evaluación no válido")}
-              >
-                <Text style={styles.buttonText}>Descargar</Text>
-              </TouchableOpacity>
+    <>
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.headerSection}>
+            <View style={styles.headerIconContainer}>
+              <MaterialCommunityIcons name="certificate" size={32} color={commonColors.success} />
             </View>
-          )}
-        />
-      </View>
-    </SafeAreaView>
-    <NavbarQuiz navigation={navigation} />
-  </>
+            <Text style={styles.title}>Mis Certificados</Text>
+            <Text style={styles.subtitle}>{certificates.length} certificado{certificates.length !== 1 ? 's' : ''} aprobado{certificates.length !== 1 ? 's' : ''}</Text>
+          </View>
+
+          {/* Certificates List */}
+          <View style={styles.certificatesContainer}>
+            {certificates.map((item, index) => (
+              <View key={item?.id ? item.id.toString() : index.toString()} style={styles.certificateCard}>
+                <View style={styles.cardHeader}>
+                  <View style={styles.badgeContainer}>
+                    <MaterialCommunityIcons name="check-circle" size={24} color={commonColors.success} />
+                  </View>
+                  <View style={styles.cardTitleContainer}>
+                    <Text style={styles.certTitle}>Certificado #{item.id}</Text>
+                    <Text style={styles.certDate}>
+                      <MaterialCommunityIcons name="calendar" size={14} color={commonColors.textSecondary} /> {item.issuedAt}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={commonStyles.divider} />
+
+                <TouchableOpacity
+                  style={[
+                    styles.downloadButton,
+                    downloading === item.id && styles.downloadButtonLoading
+                  ]}
+                  onPress={() => item.id ? handleDownload(item.id) : console.error("ID de evaluación no válido")}
+                  disabled={downloading === item.id}
+                >
+                  {downloading === item.id ? (
+                    <>
+                      <ActivityIndicator size="small" color="#fff" />
+                      <Text style={styles.downloadButtonText}>Descargando...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <MaterialCommunityIcons name="download" size={18} color="#fff" />
+                      <Text style={styles.downloadButtonText}>Descargar PDF</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+      <NavbarQuiz navigation={navigation} />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
-  certificateCard: { 
-    padding: 15, 
-    borderWidth: 1, 
-    borderColor: '#a6b5c4', 
-    borderRadius: 10, 
-    marginBottom: 10 
+  container: {
+    flex: 1,
+    backgroundColor: commonColors.background,
   },
-  certTitle: { fontSize: 16, fontWeight: 'bold' },
-  certDate: { fontSize: 14, color: 'gray', marginBottom: 10 },
-  downloadButton: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold' }
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 100,
+  },
+
+  /* Loading State */
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: commonColors.textSecondary,
+    marginTop: 0,
+  },
+
+  /* Empty State */
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f0f5ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: commonColors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: commonColors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+  /* Header Section */
+  headerSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: commonColors.border,
+  },
+  headerIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#f0fef0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: commonColors.textPrimary,
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: commonColors.textSecondary,
+    fontWeight: '500',
+  },
+
+  /* Certificates Container */
+  certificatesContainer: {
+    gap: 14,
+  },
+
+  /* Certificate Card */
+  certificateCard: {
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: commonColors.border,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  badgeContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#f0fef0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardTitleContainer: {
+    flex: 1,
+  },
+  certTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: commonColors.textPrimary,
+    marginBottom: 4,
+  },
+  certDate: {
+    fontSize: 13,
+    color: commonColors.textSecondary,
+    fontWeight: '500',
+  },
+
+  /* Download Button */
+  downloadButton: {
+    backgroundColor: commonColors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 0,
+    shadowColor: commonColors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  downloadButtonLoading: {
+    opacity: 0.7,
+  },
+  downloadButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
 });
+
+export default ResultsScreen;

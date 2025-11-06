@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Feather';
-import FormScreenWrapper from '../../components/FormScreenWrapper'; 
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { commonColors, commonStyles } from '../../styles/commonStyles';
 
 export function EvaluationDataBasicView({route, navigation }:any) {
-  const {fishLotId, ubication} = route.params;
+  const params = route?.params ?? {};
+  const fishLotId = params?.fishLotId ?? null;
+  const ubication = params?.ubication ?? null;
   const [date, setDate] = useState('');
   const [hour, setHour] = useState('');
+  // ISO-friendly fields for API
+  const [dateISO, setDateISO] = useState(''); // YYYY-MM-DD
+  const [hourISO, setHourISO] = useState(''); // HH:MM:SS (24h)
   const [condAmbientals, setCondAmbientals] = useState('');
   const [condStorage, setCondStorage] = useState('');
   const [temperature, setTemperature] = useState('');
@@ -17,9 +21,21 @@ export function EvaluationDataBasicView({route, navigation }:any) {
   const [quantity, setQuantity] = useState<number | null>(null);
 
   useEffect(() => {
+    if (fishLotId == null) {
+      Alert.alert('Faltan datos', 'No se encontró el identificador del lote.', [
+        { text: 'Aceptar', onPress: () => navigation.goBack?.() }
+      ]);
+      return;
+    }
     const now = new Date();
     setDate(now.toLocaleDateString());
     setHour(now.toLocaleTimeString());
+    // Reliable API formats
+    setDateISO(now.toISOString().slice(0, 10));
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    setHourISO(`${hh}:${mm}:${ss}`);
   }, []);
 
   const handleSubmit = () => {
@@ -44,6 +60,8 @@ export function EvaluationDataBasicView({route, navigation }:any) {
       ubication,
       date,
       hour,
+      dateISO,
+      hourISO,
       // condAmbientals,
       // condStorage,
       temperature,
@@ -55,80 +73,107 @@ export function EvaluationDataBasicView({route, navigation }:any) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.formContainer}>
-        <Text style={styles.sectionTitle}>Información basica</Text>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView style={styles.formContainer} contentContainerStyle={styles.formContent} keyboardShouldPersistTaps="handled">
+        <Text style={styles.sectionTitle}>Información básica</Text>
+
         <View style={styles.dateTimeContainer}>
           <View style={styles.iconTextContainer}>
-            <Icon name="clock" size={24} color="black" />
+            <MaterialCommunityIcons name="clock-outline" size={22} color={commonColors.primary} />
             <Text style={styles.dateTimeText}>{hour}</Text>
           </View>
           <View style={styles.iconTextContainer}>
-            <Icon name="calendar" size={24} color="black" />
+            <MaterialCommunityIcons name="calendar-month" size={22} color={commonColors.primary} />
             <Text style={styles.dateTimeText}>{date}</Text>
           </View>
-      {/* <FormScreenWrapper> */}
         </View>
+
         <Text style={styles.inputLabel}>Condiciones ambientales</Text>
-        <TextInput style={styles.textInput} 
-        value={condAmbientals}
-        onChangeText={setCondAmbientals}
-        multiline
-        numberOfLines={3} />
+        <TextInput
+          style={styles.textArea}
+          value={condAmbientals}
+          onChangeText={setCondAmbientals}
+          multiline
+          numberOfLines={4}
+          placeholder="Describe las condiciones ambientales"
+          placeholderTextColor={commonColors.textTertiary}
+        />
+
         <Text style={styles.inputLabel}>Condiciones de almacenamiento</Text>
-        <TextInput style={styles.textInput} 
-        value={condStorage}
-        onChangeText={setCondStorage}
-        multiline 
-        numberOfLines={3}/>
+        <TextInput
+          style={styles.textArea}
+          value={condStorage}
+          onChangeText={setCondStorage}
+          multiline
+          numberOfLines={4}
+          placeholder="Describe las condiciones de almacenamiento"
+          placeholderTextColor={commonColors.textTertiary}
+        />
+
         <Text style={styles.inputLabel}>Temperatura (°C)</Text>
-        <TextInput
-          style={styles.textInput}
-          value={temperature}
-          onChangeText={(value) => {
-            const numericValue = value.replace(/[^0-9.]/g, ''); // Permite solo números y punto decimal
-            setTemperature(numericValue);
-          }}
-          keyboardType="numeric"
-        />
+        <View style={commonStyles.inputGroup}>
+          <TextInput
+            style={commonStyles.input}
+            value={temperature}
+            onChangeText={(value) => {
+              const numericValue = value.replace(/[^0-9.]/g, '');
+              setTemperature(numericValue);
+            }}
+            keyboardType="numeric"
+            placeholder="Ej: 24.5"
+            placeholderTextColor={commonColors.textTertiary}
+          />
+        </View>
+
         <Text style={styles.inputLabel}>Especie</Text>
-        <TextInput style={styles.textInput}
-        value={species}
-        onChangeText={setSpecies}
-        />
+        <View style={commonStyles.inputGroup}>
+          <TextInput
+            style={commonStyles.input}
+            value={species}
+            onChangeText={setSpecies}
+            placeholder="Ej: Tilapia"
+            placeholderTextColor={commonColors.textTertiary}
+          />
+        </View>
+
         <Text style={styles.inputLabel}>Peso promedio</Text>
-        <TextInput
-        value={averageWeight !== null ? averageWeight.toString() : ''}
-        onChangeText={(value) => {
-          const numericValue = value.replace(/\D/g, '');
-          setAverageWeight(Number(numericValue));
-        }}
-        keyboardType="numeric"
-        placeholder="Ingrese el peso promedio de los peces del lote"
-        style={styles.textInput}
-        />
+        <View style={commonStyles.inputGroup}>
+          <TextInput
+            value={averageWeight !== null ? averageWeight.toString() : ''}
+            onChangeText={(value) => {
+              const numericValue = value.replace(/\D/g, '');
+              setAverageWeight(Number(numericValue));
+            }}
+            keyboardType="numeric"
+            placeholder="Peso promedio del lote"
+            placeholderTextColor={commonColors.textTertiary}
+            style={commonStyles.input}
+          />
+        </View>
 
         <Text style={styles.inputLabel}>Cantidad</Text>
+        <View style={commonStyles.inputGroup}>
+          <TextInput
+            value={quantity !== null ? quantity.toString() : ''}
+            onChangeText={(value) => {
+              const numericValue = value.replace(/\D/g, '');
+              setQuantity(Number(numericValue));
+            }}
+            keyboardType="numeric"
+            placeholder="Cantidad de peces del lote"
+            placeholderTextColor={commonColors.textTertiary}
+            style={commonStyles.input}
+          />
+        </View>
 
-        <TextInput
-        value={quantity !== null ? quantity.toString() : ''}
-        onChangeText={(value) => {
-          const numericValue = value.replace(/\D/g, '');
-          setQuantity(Number(numericValue));
-        }}
-        keyboardType="numeric"
-        placeholder="Ingrese la cantidad de peces del lote"
-        style={styles.textInput}
-        />
-        
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, styles.cancelButton]}>
-          <Text style={styles.buttonText}>Cancelar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.nextButton]} onPress={()=>handleSubmit()}>
-          <Text style={styles.buttonText}>Siguiente</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[commonStyles.buttonSecondary, styles.buttonHalf]} onPress={() => navigation.goBack?.()}>
+            <Text style={commonStyles.buttonSecondaryText}>Cancelar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[commonStyles.buttonPrimary, styles.buttonHalf]} onPress={handleSubmit}>
+            <Text style={commonStyles.buttonPrimaryText}>Siguiente</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -137,7 +182,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: commonColors.background,
   },
   header: {
     flexDirection: 'row',
@@ -153,12 +198,17 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    padding: 16,
+  },
+  formContent: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: commonColors.textPrimary,
   },
   dateTimeContainer: {
     flexDirection: 'row',
@@ -168,45 +218,35 @@ const styles = StyleSheet.create({
   iconTextContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   dateTimeText: {
-    marginLeft: 8,
-    fontSize: 16,
+    fontSize: 14,
+    color: commonColors.textPrimary,
   },
   inputLabel: {
-    fontSize: 14,
-    marginBottom: 4,
+    fontSize: 13,
+    marginBottom: 6,
+    color: commonColors.textSecondary,
   },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 4,
-    padding: 8,
+  textArea: {
+    borderWidth: 1.5,
+    borderColor: commonColors.border,
+    borderRadius: 12,
+    backgroundColor: commonColors.cardBackground,
+    padding: 12,
     marginBottom: 16,
-    minHeight: 40,
+    minHeight: 96,
+    color: commonColors.textPrimary,
+    textAlignVertical: 'top',
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
+    gap: 12,
+    marginTop: 8,
   },
-  button: {
+  buttonHalf: {
     flex: 1,
-    padding: 12,
-    borderRadius: 4,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#f44336',
-    marginRight: 8,
-  },
-  nextButton: {
-    backgroundColor: '#4caf50',
-    marginLeft: 8,
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
   },
 });
 

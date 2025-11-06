@@ -1,58 +1,98 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { commonColors, commonStyles } from '../styles/commonStyles';
+
 const LogoApp = require('../assets/LogoName.png');
 
 export function Home({ navigation }: { navigation: any }){
   const user = useSelector((state: RootState) => state.auth.user);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Inicio</Text>
-      <Image source={LogoApp} style={styles.logo} />
-      <View style={styles.userInfo}>
-        <Text style={styles.label}>Nombre de usuario:</Text>
-        <Text style={styles.value}>{user.name}</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image source={LogoApp} style={styles.logo} />
       </View>
-      <View style={styles.userInfo}>
-        <Text style={styles.label}>Rol:</Text>
-        <Text style={styles.value}>{user.role}</Text>
+
+      {/* User Info Card */}
+      <View style={styles.userCard}>
+        <View style={styles.userInfoItem}>
+          <MaterialCommunityIcons name="account-circle" size={24} color={commonColors.primary} style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Nombre de Usuario</Text>
+            <Text style={styles.value}>{user?.name ?? 'No disponible'}</Text>
+          </View>
+        </View>
+
+        <View style={commonStyles.divider} />
+
+        <View style={styles.userInfoItem}>
+          <MaterialCommunityIcons name="briefcase" size={24} color={commonColors.primary} style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.label}>Rol</Text>
+            <Text style={styles.value}>{user?.role ?? 'No disponible'}</Text>
+          </View>
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#34495e',
+    backgroundColor: commonColors.background,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+
+  /* Logo Container */
+  logoContainer: {
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+  },
+
+  /* User Card */
+  userCard: {
+    marginHorizontal: 20,
     marginBottom: 20,
-    color: '#fff',
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: commonColors.border,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  userInfo: {
+  userInfoItem: {
     flexDirection: 'row',
-    marginBottom: 10,
     alignItems: 'center',
+    paddingVertical: 8,
   },
   label: {
-    fontSize: 16,
-    marginRight: 10,
-    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    color: commonColors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   value: {
     fontSize: 16,
-    color: '#d3d2e0',
-  },
-  logo: {
-    width: 200,
-    height: 200,
+    fontWeight: '600',
+    color: commonColors.textPrimary,
   },
 });
 

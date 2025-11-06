@@ -1,6 +1,7 @@
 export * from './Home';
 export * from './RegisterRoleDataNextLoginView';
 export * from './verification/VerificationUsersView';
+export * from './UsersView';
 export * from './crud/CrudUsersView';
 export * from './registerLotFishs/RegisterLotDataView';
 export * from './crud/CrudFishLotView';

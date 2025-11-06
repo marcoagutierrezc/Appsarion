@@ -69,7 +69,7 @@ const roleEndpoints: Record<string, string> = {
 };
 
 export function CrudUsersView() {
-  const userRole = useSelector((state: RootState) => state.auth.user.role);
+  const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
   const [users, setUsers] = useState<User[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);

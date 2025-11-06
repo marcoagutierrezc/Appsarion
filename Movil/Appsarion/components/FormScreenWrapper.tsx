@@ -1,6 +1,6 @@
 import React from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = {
   children: React.ReactNode;
@@ -8,24 +8,27 @@ type Props = {
 
 const FormScreenWrapper = ({ children }: Props) => {
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={styles.container}
-      extraScrollHeight={20}
-      enableOnAndroid
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.inner}>
-        {children}
-      </View>
-    </KeyboardAwareScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="on-drag"
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        <View style={styles.inner}>{children}</View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flexGrow: 1,
     padding: 16,
-    backgroundColor: '#fff',
   },
   inner: {
     flex: 1,

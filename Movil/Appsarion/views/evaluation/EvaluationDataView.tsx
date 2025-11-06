@@ -6,19 +6,34 @@ import {
     StyleSheet,
     ScrollView,
     Alert,
+  TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import Select from '../../components/SelectComponent';
 import {colorOptions, eyeOptions, furOptions, gillOptions, meatOptions, smellOptions, textureOptions} from '../../data/optionsNTC1443';
 import {BASE_URL} from '../../services/connection/connection';
-import FormScreenWrapper from '../../components/FormScreenWrapper'; 
+import { commonColors, commonStyles } from '../../styles/commonStyles';
 
 export function EvaluationDataView({route, navigation}:any){
-    const userRole = useSelector((state: RootState) => state.auth.user.role);
-    const idRole = useSelector((state: RootState) => state.auth.user.idRole);
-    const {fishLotId, date, hour, condAmbientals, condStorage, temperature, species, averageWeight, quantity} = route.params;
+  const userRole = useSelector((state: RootState) => state.auth.user?.role?.toLowerCase() ?? '');
+  const idRole = useSelector((state: RootState) => state.auth.user?.idRole);
+  const params = route?.params ?? {};
+  const {
+    fishLotId = null,
+    ubication = null,
+    date,
+    hour,
+    dateISO,
+    hourISO,
+    condAmbientals,
+    condStorage,
+    temperature,
+    species,
+    averageWeight,
+    quantity,
+  } = params as any;
     const [smell, setSmell] = useState<number | null>(null);
     const [fur, setFur] = useState<number | null>(null);
     const [meat, setMeat] = useState<number | null>(null);
@@ -26,6 +41,7 @@ export function EvaluationDataView({route, navigation}:any){
     const [texture, setTexture] = useState<number | null>(null);
     const [color, setColor] = useState<number | null>(null);
     const [gills, setGills] = useState<number | null>(null);
+    const [observations, setObservations] = useState<string>('');
 
 
     const [piscicultorId, setPiscicultorId] = useState<number | null>(null);
@@ -33,19 +49,25 @@ export function EvaluationDataView({route, navigation}:any){
     const [comercializadorId, setComercializadorId] = useState<number | null>(null);
 
     useEffect(() => {
+      const numericId = idRole != null && !isNaN(Number(idRole)) ? Number(idRole) : null;
       if (userRole === "piscicultor") {
-        setPiscicultorId(idRole);
+        setPiscicultorId(numericId);
       } else if (userRole === "evaluador") {
-        setEvaluadorId(idRole);
+        setEvaluadorId(numericId);
       } else if (userRole === "comercializador") {
-        setComercializadorId(idRole);
+        setComercializadorId(numericId);
       }
     }, [userRole, idRole]);
 
 
     const handleSubmit = async () => {
+      if (fishLotId == null) {
+        Alert.alert('Faltan datos', 'No se encontró el identificador del lote.');
+        return;
+      }
       const isFormValid = () => {
-        return [smell, fur, meat, eyes, texture, color, gills].every(value => value !== null && value !== undefined);
+        // Consideramos válidos solo números definidos (>= 0)
+        return [smell, fur, meat, eyes, texture, color, gills].every((value) => typeof value === 'number' && !Number.isNaN(value));
       };
 
       if (!isFormValid()) {
@@ -59,9 +81,9 @@ export function EvaluationDataView({route, navigation}:any){
         piscicultorId: piscicultorId ?? null,
         evaluadorId: evaluadorId ?? null,
         comercializadorId: comercializadorId ?? null,
-        ubication: 0,
-        date: new Date(date).toISOString().split("T")[0], // Formato YYYY-MM-DD
-        hour: `${hour}:00`, // Asegurar formato HH:MM:SS
+        ubication: ubication ?? 0,
+        date: dateISO || new Date().toISOString().slice(0,10), // YYYY-MM-DD
+        hour: hourISO || '00:00:00', // HH:MM:SS
         temperature: Number(temperature),
         species,
         averageWeight,
@@ -72,11 +94,12 @@ export function EvaluationDataView({route, navigation}:any){
         eyes,
         texture,
         color,
-        gills
+        gills,
+        observations: observations.trim() || null,
      };
      
 
-      console.log('Información de la evaluación:',DataEvaluation);
+  console.log('Información de la evaluación:', DataEvaluation);
 
       try {
         const response = await fetch(`${BASE_URL}/real_data`, {
@@ -92,16 +115,17 @@ export function EvaluationDataView({route, navigation}:any){
         }
       
         Alert.alert('Éxito', 'Evaluación completada con éxito.');
-        navigation.navigate('Lotes');
-      } catch (error) {
+        navigation.navigate('Drawer', { screen: 'Lotes' });
+      } catch (error: any) {
         console.error('Error en el registro de la evaluación:', error);
-        Alert.alert('Error', `Error en el registro: ${error.message}`);
+        Alert.alert('Error', `Error en el registro: ${error?.message || 'desconocido'}`);
       }
     }
     
     return (
-      // <FormScreenWrapper>
-      <ScrollView style={styles.container} keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
+        <Text style={styles.title}>Evaluación organoléptica</Text>
         <View>
           <Select
             label="Olor" 
@@ -167,53 +191,77 @@ export function EvaluationDataView({route, navigation}:any){
             onValueChange={(itemValue: string) => setGills(Number(itemValue))}
           />
         </View>
+        <Text style={styles.inputLabel}>Observaciones (opcional)</Text>
+        <TextInput
+          style={styles.observations}
+          value={observations}
+          onChangeText={setObservations}
+          placeholder="Escribe observaciones adicionales"
+          placeholderTextColor={commonColors.textTertiary}
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+        />
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={()=>navigation.popToTop()}>
-            <Text style={styles.buttonText}>Cancelar</Text>
+          <TouchableOpacity style={[commonStyles.buttonSecondary, styles.buttonHalf]} onPress={()=>navigation.popToTop()}>
+            <Text style={commonStyles.buttonSecondaryText}>Cancelar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.button, styles.nextButton]} onPress={()=>handleSubmit}>
-            <Text style={styles.buttonText}>Finalizar</Text>
+          <TouchableOpacity style={[commonStyles.buttonSuccess, styles.buttonHalf]} onPress={handleSubmit}>
+            <Text style={commonStyles.buttonSuccessText}>Finalizar</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-      // </FormScreenWrapper>
+      </SafeAreaView>
       )
 };
 
 const styles = StyleSheet.create({ 
+    safeArea: {
+      flex: 1,
+      backgroundColor: commonColors.background,
+    },
     container:{
         flex: 1,
-        padding: 30,
-        paddingBottom:0,
-        backgroundColor: '#fff',
-        height: '100%',
+        backgroundColor: commonColors.background,
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      paddingBottom: 24,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: commonColors.textPrimary,
+      marginBottom: 12,
+    },
+    inputLabel: {
+      fontSize: 13,
+      marginTop: 8,
+      marginBottom: 6,
+      color: commonColors.textSecondary,
     },
     picker: {
         height: 40,
         marginBottom: 10,
     },
+    observations: {
+      borderWidth: 1.5,
+      borderColor: commonColors.border,
+      borderRadius: 12,
+      backgroundColor: commonColors.cardBackground,
+      padding: 12,
+      marginBottom: 16,
+      minHeight: 96,
+      color: commonColors.textPrimary,
+    },
     buttonContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      padding: 16,
+      gap: 12,
+      marginTop: 8,
     },
-    button: {
+    buttonHalf: {
       flex: 1,
-      padding: 12,
-      borderRadius: 4,
-      alignItems: 'center',
-    },
-    cancelButton: {
-      backgroundColor: '#f44336',
-      marginRight: 8,
-    },
-    nextButton: {
-      backgroundColor: '#4caf50',
-      marginLeft: 8,
-    },
-    buttonText: {
-      color: 'white',
-      fontWeight: 'bold',
     },
 });
 

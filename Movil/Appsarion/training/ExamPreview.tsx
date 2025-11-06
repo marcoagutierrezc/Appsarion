@@ -1,37 +1,83 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavbarQuiz } from '../components/NavbarQuiz';
+import { commonColors, commonStyles } from '../styles/commonStyles';
 
 const examInfo = {
   totalQuestions: 15,
-  categories: ['ASPECTOS GENERALES DE LA PISCICULTURA','SUELOS Y ESTANQUES','COSECHA Y POST PRODUCCIÓN','BUENAS PRACTICAS DE MANEJO', 'NTC 1443'],
-  timeLimit: 30, // en minutos
+  categories: ['Aspectos Generales', 'Suelos y Estanques', 'Cosecha y Post Producción', 'Buenas Prácticas', 'NTC 1443'],
+  timeLimit: 30,
 };
 
-
 export function ExamPreview({navigation}:any) {
-
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Examen de buenas prácticas piscicolas y conocimiento de la norma NTC 1443</Text>
-        
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Información del Examen:</Text>
-          <Text style={styles.infoText}>• Total de preguntas: {examInfo.totalQuestions}</Text>
-          <Text style={styles.infoText}>• Categorías: {examInfo.categories.join(', ')}</Text>
-          <Text style={styles.infoText}>• Tiempo límite: {examInfo.timeLimit} minutos</Text>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Icon Section */}
+        <View style={styles.iconSection}>
+          <View style={styles.iconBadge}>
+            <MaterialCommunityIcons name="clipboard-text" size={48} color={commonColors.primary} />
+          </View>
         </View>
 
+        {/* Title */}
+        <Text style={styles.title}>Examen de Piscicultura</Text>
+        <Text style={styles.subtitle}>Prueba tus conocimientos sobre NTC 1443</Text>
+
+        {/* Info Card */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoItemWrapper}>
+              <MaterialCommunityIcons name="help-circle" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
+              <Text style={styles.infoNumber}>{examInfo.totalQuestions}</Text>
+              <Text style={styles.infoLabel}>Preguntas</Text>
+            </View>
+            <View style={styles.infoItemWrapper}>
+              <MaterialCommunityIcons name="clock" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
+              <Text style={styles.infoNumber}>{examInfo.timeLimit}</Text>
+              <Text style={styles.infoLabel}>Minutos</Text>
+            </View>
+            <View style={styles.infoItemWrapper}>
+              <MaterialCommunityIcons name="folder-multiple" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
+              <Text style={styles.infoNumber}>5</Text>
+              <Text style={styles.infoLabel}>Temas</Text>
+            </View>
+          </View>
+
+          <View style={commonStyles.divider} />
+
+          <Text style={styles.categoriesTitle}>Temas a Evaluar:</Text>
+          {examInfo.categories.map((category, index) => (
+            <View key={index} style={styles.categoryItem}>
+              <MaterialCommunityIcons name="check-circle-outline" size={16} color={commonColors.success} />
+              <Text style={styles.categoryText}>{category}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Requirements */}
+        <View style={styles.requirementsCard}>
+          <Text style={styles.requirementsTitle}>✓ Requisitos</Text>
+          <View style={styles.requirementItem}>
+            <MaterialCommunityIcons name="alert-circle" size={16} color={commonColors.warning} />
+            <Text style={styles.requirementText}>Necesitas calificar al menos el 70% para aprobar</Text>
+          </View>
+        </View>
+
+        {/* Ready Text */}
         <Text style={styles.readyText}>¿Estás listo para comenzar?</Text>
-        
+
+        {/* Start Button */}
         <TouchableOpacity 
           style={styles.startButton}
           onPress={() => navigation.navigate('Quiz')}
         >
-          <Text style={styles.startButtonText}>COMENZAR EXAMEN</Text>
+          <MaterialCommunityIcons name="play-circle" size={22} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.startButtonText}>Comenzar Examen</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
       <NavbarQuiz navigation={navigation} />
     </SafeAreaView>
   );
@@ -42,60 +88,145 @@ export default ExamPreview;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF5',
+    backgroundColor: commonColors.background,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 0,
+    paddingBottom: 20,
+  },
+
+  /* Icon Section */
+  iconSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  iconBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f0f5ff',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
+
+  /* Title */
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4199b5',
-    marginBottom: 20,
-    textAlign: 'center'
+    fontWeight: '700',
+    color: commonColors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 4,
   },
+  subtitle: {
+    fontSize: 14,
+    color: commonColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 18,
+    marginTop: 0,
+  },
+  /* Info Card */
   infoCard: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    marginBottom: 30,
-    shadowColor: '#000',
+    backgroundColor: commonColors.cardBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: commonColors.border,
+    padding: 16,
+    marginBottom: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 16,
+  },
+  infoItemWrapper: {
+    alignItems: 'center',
+  },
+  infoNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: commonColors.primary,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: commonColors.textSecondary,
+    marginTop: 0,
+  },
+  categoriesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: commonColors.textPrimary,
+    marginBottom: 12,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  categoryText: {
+    fontSize: 13,
+    color: commonColors.textPrimary,
+    fontWeight: '500',
+  },
+
+  /* Requirements Card */
+  requirementsCard: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ffc107',
+    padding: 14,
+    marginBottom: 24,
+  },
+  requirementsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 12,
+  },
+  requirementItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    gap: 8,
+  },
+  requirementText: {
+    fontSize: 13,
+    color: '#856404',
+    flex: 1,
+    lineHeight: 18,
+  },
+
+  /* Ready Text */
+  readyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: commonColors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+
+  /* Start Button */
+  startButton: {
+    backgroundColor: commonColors.success,
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    shadowColor: commonColors.success,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
     elevation: 3,
   },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-  },
-  infoText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 5,
-  },
-  readyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 20,
-  },
-  startButton: {
-    backgroundColor: '#90EE90',
-    borderRadius: 8,
-    padding: 16,
-    width: '100%',
-  },
   startButtonText: {
-    color: '#333',
+    color: '#fff',
     textAlign: 'center',
     fontWeight: '600',
-    fontSize: 18,
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
 });

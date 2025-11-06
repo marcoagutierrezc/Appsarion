@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, Button, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';  
 import { useDispatch } from 'react-redux';
 import { logIn } from '../store/slices/auth/authSlice';
 import { BASE_URL } from '../services/connection/connection';
-import { showAlert } from '../utils/alerts'; // ✅ Importa tu alerta multiplataforma
+import { showAlert } from '../utils/alerts';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const LogoApp = require('../assets/LogoName.png');
 
@@ -12,6 +13,7 @@ export function Login({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hidePassword, setHidePassword] = useState(true);
   const dispatch = useDispatch();
 
   const fetchUserRole = async (userId: number) => {
@@ -70,91 +72,330 @@ export function Login({ navigation }: any) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.subcontainer}>
-        <Image source={LogoApp} style={styles.logo} />
-        <Text style={styles.title}>Iniciar Sesión</Text>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Usuario@email.com"
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          returnKeyType="done"
-          autoCorrect={false}
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.textInput}
-          placeholder="Contraseña"
-          placeholderTextColor="gray"
-          returnKeyType="done"
-          autoCapitalize="none"
-          autoCorrect={false}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-        {loading ? (
-          <ActivityIndicator size="large" color="#fff" style={{ margin: 10 }} />
-        ) : (
-          <Button title="Iniciar sesión" onPress={login} />
-        )}
-        <Text style={styles.text}>¿No tienes una cuenta?</Text>
-        <Button title="Regístrate" onPress={() => navigation.navigate('Registro')} />
-        <View style={styles.separator} />
-        <Text style={styles.text}>¿Has tenido algún problema con la app?</Text>
-        <Button title="PQRS" onPress={() => navigation.navigate('SoportePQR')} />
-        <StatusBar style="auto" />
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        {/* Header con logo y título */}
+        <View style={styles.headerSection}>
+          <Image source={LogoApp} style={styles.logo} />
+        </View>
+
+        {/* Sección de Login */}
+        <View style={styles.formSection}>
+          <Text style={styles.sectionTitle}>Iniciar Sesión</Text>
+
+          {/* Email Input */}
+          <View style={styles.inputGroup}>
+            <MaterialCommunityIcons name="email-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Correo electrónico"
+              placeholderTextColor="#aaa"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              returnKeyType="next"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              editable={!loading}
+            />
+          </View>
+
+          {/* Password Input */}
+          <View style={styles.inputGroup}>
+            <MaterialCommunityIcons name="lock-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={[styles.textInput, { flex: 1 }]}
+              placeholder="Contraseña"
+              placeholderTextColor="#aaa"
+              returnKeyType="done"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={hidePassword}
+              editable={!loading}
+            />
+            <TouchableOpacity
+              onPress={() => setHidePassword(!hidePassword)}
+              style={styles.eyeIcon}
+            >
+              <MaterialCommunityIcons
+                name={hidePassword ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color="#0066cc"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Login Button */}
+          <TouchableOpacity
+            style={[styles.primaryButton, loading && styles.buttonDisabled]}
+            onPress={login}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <MaterialCommunityIcons name="login" size={20} color="#fff" style={{ marginRight: 8 }} />
+                <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Password Recovery Link */}
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('Recuperar Contraseña')}
+            disabled={loading}
+          >
+            <MaterialCommunityIcons name="lock-reset" size={18} color="#0066cc" style={{ marginRight: 6 }} />
+            <Text style={styles.linkButtonText}>¿Olvidaste tu contraseña?</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Sección de Registro */}
+        <View style={styles.actionSection}>
+          <Text style={styles.actionTitle}>¿No tienes cuenta?</Text>
+          <Text style={styles.actionSubtitle}>Crea una nueva cuenta para acceder</Text>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => navigation.navigate('Registro')}
+            disabled={loading}
+          >
+            <MaterialCommunityIcons name="account-plus" size={20} color="#0066cc" style={{ marginRight: 8 }} />
+            <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Sección de Soporte */}
+        <View style={styles.actionSection}>
+          <Text style={styles.actionTitle}>¿Necesitas ayuda?</Text>
+          <Text style={styles.actionSubtitle}>Contáctanos si tienes problemas con la app</Text>
+          <TouchableOpacity
+            style={styles.tertiaryButton}
+            onPress={() => navigation.navigate('SoportePQR')}
+            disabled={loading}
+          >
+            <MaterialCommunityIcons name="help-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.tertiaryButtonText}>Soporte PQRS</Text>
+          </TouchableOpacity>
+        </View>
+
+        <StatusBar style="light" />
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: '#f8f9fa',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#34495e',
-    paddingVertical: 100,
-    paddingHorizontal: 10,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 20,
+    paddingVertical: 24,
   },
-  subcontainer: {
-    flex: 1,
-    justifyContent: 'center',
+  
+  /* Header Section */
+  headerSection: {
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    padding: 5,
+    marginBottom: 32,
+    paddingTop: 16,
   },
   logo: {
-    width: 200,
-    height: 200,
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
+  mainTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#0066cc',
+    marginBottom: 4,
+    letterSpacing: 0.5,
+    display: 'none',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '400',
+    display: 'none',
+  },
+
+  /* Form Section */
+  formSection: {
+    marginBottom: 28,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 16,
+    letterSpacing: 0.3,
+  },
+
+  /* Input Group */
+  inputGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    height: 52,
+  },
+  inputIcon: {
+    marginRight: 8,
   },
   textInput: {
-    borderWidth: 1,
-    borderColor: 'gray',
-    padding: 10,
-    width: '80%',
-    height: 50,
-    margin: 10,
-    borderRadius: 30,
-    fontSize: 18,
-    color: 'white',
+    flex: 1,
+    fontSize: 16,
+    color: '#1a1a1a',
+    padding: 0,
+    fontWeight: '500',
   },
-  text: {
-    margin: 8,
-    color: 'gray',
-    fontSize: 15,
+  eyeIcon: {
+    padding: 8,
+    marginRight: -8,
   },
-  separator: {
+
+  /* Buttons */
+  primaryButton: {
+    backgroundColor: '#0066cc',
+    borderRadius: 12,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: 8,
+    marginBottom: 12,
+    shadowColor: '#0066cc',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+
+  /* Link Button */
+  linkButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  linkButtonText: {
+    color: '#0066cc',
+    fontSize: 14,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+  },
+
+  /* Divider */
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
     height: 1,
-    width: '90%',
-    backgroundColor: 'black',
-    margin: 15,
+    backgroundColor: '#e0e0e0',
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '500',
+  },
+
+  /* Action Section */
+  actionSection: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  actionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  actionSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 12,
+    fontWeight: '400',
+    lineHeight: 18,
+  },
+
+  /* Secondary Button */
+  secondaryButton: {
+    backgroundColor: '#f0f5ff',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1.5,
+    borderColor: '#0066cc',
+  },
+  secondaryButtonText: {
+    color: '#0066cc',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+
+  /* Tertiary Button */
+  tertiaryButton: {
+    backgroundColor: '#28a745',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    shadowColor: '#28a745',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  tertiaryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
 });
 

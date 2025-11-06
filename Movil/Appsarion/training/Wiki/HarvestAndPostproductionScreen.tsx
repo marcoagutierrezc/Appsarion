@@ -1,11 +1,15 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AestheticText from '../../components/AestheticText';
+import InlineBackHeader from '../../components/InlineBackHeader';
+import { commonColors } from '../../styles/commonStyles';
 
 export function HarvestAndPostproductionScreen(){
     return (
-    <ScrollView style={styles.container}>
-        <View style={styles.content}>
+    <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        <InlineBackHeader />
         <AestheticText
             title="COSECHA Y POST PRODUCCIÓN"
             content="La cosecha es el proceso de extracción de los peces del agua una vez que han alcanzado su tamaño de mercado. Dependiendo de la especie y el sistema de cultivo, las técnicas de cosecha pueden variar. En sistemas de jaulas flotantes, la cosecha generalmente se realiza mediante redes grandes, mientras que en estanques, los peces se capturan usando redes o trampas. Durante la cosecha, es esencial minimizar el estrés de los peces, ya que esto puede afectar la calidad del producto final."
@@ -22,8 +26,8 @@ export function HarvestAndPostproductionScreen(){
         <AestheticText
             content="La clasificación y el empaque también son procesos fundamentales para la post-producción. Los peces se clasifican según su tamaño, peso y calidad, y luego se empacan en condiciones sanitarias adecuadas para su transporte a los mercados. Es fundamental seguir las normativas sanitarias locales e internacionales para evitar contaminaciones y garantizar la trazabilidad del producto."
         />
-        </View>
-    </ScrollView>
+        </ScrollView>
+    </SafeAreaView>
     );
 };
     
@@ -32,10 +36,15 @@ export default HarvestAndPostproductionScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#34495e',
+        backgroundColor: commonColors.background,
+    },
+    scrollView: {
+        flex: 1,
     },
     content: {
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingTop: 0,
+        paddingBottom: 24,
     },
     spacer: {
         height: 20, 

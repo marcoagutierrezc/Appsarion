@@ -1,11 +1,15 @@
 import React from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AestheticText from '../../components/AestheticText';
+import InlineBackHeader from '../../components/InlineBackHeader';
+import { commonColors } from '../../styles/commonStyles';
 
 export function FloorAndSpondsScreen(){
       return (
-        <ScrollView style={styles.container}>
-          <View style={styles.content}>
+        <SafeAreaView style={styles.container}>
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+            <InlineBackHeader />
             <AestheticText
               title="SUELOS Y ESTANQUES"
               content="El suelo juega un papel crítico en la piscicultura porque determina la capacidad de los estanques para retener agua y minimizar la filtración hacia el suelo circundante, lo que puede ser costoso y difícil de controlar. En la construcción de estanques, es esencial considerar la geología del sitio. Los suelos arcillosos son ideales, ya que tienen una alta capacidad de impermeabilización. Sin embargo, en zonas donde estos suelos no están disponibles, se pueden utilizar capas de material sintético o geomembranas para mejorar la retención de agua."
@@ -22,8 +26,8 @@ export function FloorAndSpondsScreen(){
             <AestheticText
               content="El control de la calidad del agua es una tarea continua. Los parámetros a monitorear incluyen el pH, la temperatura, el nivel de oxígeno disuelto, la salinidad, y la concentración de amoníaco. Las técnicas de filtración de agua como la biofiltración, la aeración y el uso de plantas acuáticas son fundamentales para mantener estos parámetros dentro de los niveles ideales."
             />
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </SafeAreaView>
       );
     };
     
@@ -32,10 +36,15 @@ export default FloorAndSpondsScreen;
     const styles = StyleSheet.create({
       container: {
         flex: 1,
-        backgroundColor: '#34495e',
+        backgroundColor: commonColors.background,
+      },
+      scrollView: {
+        flex: 1,
       },
       content: {
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingTop: 0,
+        paddingBottom: 24,
       },
       spacer: {
         height: 20,

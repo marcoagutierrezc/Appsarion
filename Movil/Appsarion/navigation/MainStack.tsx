@@ -7,19 +7,19 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { logOut } from '../store/slices/auth/authSlice';
-import { Home, VerificationUsersView, CrudUsersView, RegisterLotDataView, RegisterRoleDataNextLoginView, CrudFishLotView, EvaluationDataBasicView, EvaluationDataView } from '../views';
+import { Home, VerificationUsersView, UsersView, RegisterLotDataView, RegisterRoleDataNextLoginView, CrudFishLotView, EvaluationDataBasicView, EvaluationDataView } from '../views';
 import TrainingStack from './TrainingStack';
 
 const Stack = createNativeStackNavigator();
 
 const MainStack = () => {
-  const infoRole = useSelector((state: RootState) => state.auth.user.infoRole);
-  const userRole = useSelector((state: RootState) => state.auth.user.role);
+  const infoRole = useSelector((state: RootState) => state.auth.user?.infoRole ?? null);
+  const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
 
   return (
     <Stack.Navigator 
-      screenOptions={{ headerShown: true }} 
-      initialRouteName={userRole === 'Admin' ? "Drawer" : infoRole ? "Drawer" : "Registro Rol"}
+  screenOptions={{ headerShown: true }} 
+  initialRouteName={userRole === 'Admin' ? "Drawer" : infoRole ? "Drawer" : "Registro Rol"}
     >
       <Stack.Screen name="Drawer" component={DrawerNavigation} options={{headerShown: false}}/>
       <Stack.Screen name="Registro Rol" component={RegisterRoleDataNextLoginView} />
@@ -35,7 +35,7 @@ const LogoutScreen = () => null;
 
 const DrawerNavigation = ({ navigation }:any) => {
   const dispatch = useDispatch();
-  const userRole = useSelector((state: RootState) => state.auth.user.role);
+  const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
@@ -61,9 +61,9 @@ const DrawerNavigation = ({ navigation }:any) => {
       <Drawer.Screen name="Home" component={Home} />
       {userRole === "Admin" && 
         <Drawer.Screen name="Verificación" component={VerificationUsersView} />}
-      {(userRole === "Admin" || userRole === "Evaluador") && 
-        <Drawer.Screen name="Usuarios" component={CrudUsersView} />}
-      {(userRole === "Piscicultor" || userRole === "Comercializador" || userRole === "Evaluador" || userRole === "Academico") && (
+      {userRole === "Admin" && 
+        <Drawer.Screen name="Usuarios" component={UsersView} />}
+      {(userRole === "Piscicultor" || userRole === "Comercializador" || userRole === "Evaluador" || userRole === "Academico" || userRole === "Académico") && (
         <Drawer.Screen name="Lotes" component={CrudFishLotView} />
       )}
       <Drawer.Screen

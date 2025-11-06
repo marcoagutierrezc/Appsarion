@@ -8,8 +8,8 @@ import { obtenerCiudadesPorDepartamento, obtenerListaDepartamentos } from '../ut
 import data from '../data/colombia.json';
 
 export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any }) {
-  const id = useSelector((state: RootState) => state.auth.user.id);
-  const checkedRol = useSelector((state: RootState) => state.auth.user.role);
+  const id = useSelector((state: RootState) => state.auth.user?.id);
+  const checkedRol = useSelector((state: RootState) => state.auth.user?.role);
   
   const [listDepartamento, setListDepartamento] = useState<string[]>([]);
   const [citiesFilter, setCitiesFilter] = useState<string[]>([]);
@@ -118,8 +118,9 @@ export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any 
         throw new Error(typeof result === 'string' ? result : result.message || 'Error al actualizar los datos.');
       }
   
-      Alert.alert('Éxito', 'Los datos fueron actualizados correctamente.');
-      navigation.navigate('DrawerNavigation');
+  Alert.alert('Éxito', 'Los datos fueron actualizados correctamente.');
+  // Navigate to the root Drawer after updating role data
+  navigation.navigate('Drawer');
     } catch (error: any) {
       Alert.alert('Error', error.message);
     }

@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { 
   View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert, Platform 
 } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Buffer } from "buffer";
-import * as IntentLauncher from 'expo-intent-launcher';
 import { BASE_URL } from '../services/connection/connection';
 
-global.Buffer = Buffer;
+ 
 
 interface Evaluation {
   id: number;
@@ -30,34 +28,38 @@ const FishLotCard: React.FC<FishLotCardProps> = ({ fishLot, navigation }) => {
   const [loading, setLoading] = useState(false);
 
   // Función para obtener las evaluaciones asociadas al lote
-  const fetchEvaluations = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/real_data/fish_lot/${fishLot.id}`);
-      if (!response.ok) throw new Error('Error al obtener las evaluaciones');
-
-      const data = await response.json();
-
-      const formattedEvaluations = data.map((ev: any) => ({
-        id: ev.id,
-        averageWeight: ev.averageWeight,
-        species: ev.species,
-        date: ev.date,
-        temperature: ev.temperature,
-        quantity: ev.quantity,
-      }));
-
-      setEvaluations(formattedEvaluations);
-    } catch (error) {
-      Alert.alert('Error', 'No se pudieron cargar las evaluaciones.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (modalVisible) fetchEvaluations();
-  }, [modalVisible]);
+    let isActive = true;
+    const run = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${BASE_URL}/real_data/fish_lot/${fishLot.id}`);
+        if (!response.ok) throw new Error('Error al obtener las evaluaciones');
+
+        const data = await response.json();
+
+        const formattedEvaluations = data.map((ev: any) => ({
+          id: ev.id,
+          averageWeight: ev.averageWeight,
+          species: ev.species,
+          date: ev.date,
+          temperature: ev.temperature,
+          quantity: ev.quantity,
+        }));
+
+        if (isActive) setEvaluations(formattedEvaluations);
+      } catch (error) {
+        if (isActive) Alert.alert('Error', 'No se pudieron cargar las evaluaciones.');
+      } finally {
+        if (isActive) setLoading(false);
+      }
+    };
+
+    if (modalVisible) run();
+    return () => {
+      isActive = false;
+    };
+  }, [modalVisible, fishLot.id]);
 
   const handleDownload = async (evaluationId: number) => {
     try {
@@ -73,32 +75,16 @@ const FishLotCard: React.FC<FishLotCardProps> = ({ fishLot, navigation }) => {
       const reportData = await reportResponse.json();
       const reportId = reportData.id;
 
-      // Obtener el PDF
-      const pdfResponse = await fetch(`${BASE_URL}/reports/pdf?reportId=${reportId}`);
-      if (!pdfResponse.ok) throw new Error('Error al descargar la evaluación.');
-
-      const arrayBuffer = await pdfResponse.arrayBuffer();
-      const base64Data = Buffer.from(arrayBuffer).toString('base64');
-
-      // Guardar el archivo localmente
-      const fileUri = `${FileSystem.documentDirectory}evaluacion_${evaluationId}.pdf`;
-      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // Descargar y guardar el PDF con la nueva API
+      const destDir = new Directory(Paths.document, 'evaluaciones');
+      destDir.create({ idempotent: true, intermediates: true });
+      const destFile = new File(destDir, `evaluacion_${evaluationId}.pdf`);
+      await File.downloadFileAsync(`${BASE_URL}/reports/pdf?reportId=${reportId}` , destFile, { idempotent: true });
 
       Alert.alert('Descarga completada', 'El archivo se ha guardado.');
 
-      // Abrir el archivo
-      if (Platform.OS === 'android') {
-        const cUri = await FileSystem.getContentUriAsync(fileUri);
-        await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-          data: cUri,
-          flags: 1,
-          type: 'application/pdf',
-        });
-      } else if (Platform.OS === 'ios') {
-        await Sharing.shareAsync(fileUri);
-      }
+      // Abrir/compartir el archivo
+      await Sharing.shareAsync(destFile.uri, { mimeType: 'application/pdf' });
 
     } catch (error) {
       console.error('Error al descargar la evaluación:', error);
@@ -113,7 +99,7 @@ const FishLotCard: React.FC<FishLotCardProps> = ({ fishLot, navigation }) => {
       <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
         <Text style={styles.buttonText}>Ver Evaluaciones</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Evaluacion - Datos Basicos', { fishLotId: fishLot.id, ubication:fishLot.neighborhood })}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Evaluacion - Datos Basicos', { fishLotId: fishLot.id, ubication: fishLot?.neighborhood ?? '' })}>
         <Text style={styles.buttonText}>Realizar Evaluación</Text>
       </TouchableOpacity>
 
@@ -212,4 +198,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishLotCard;
+export default memo(FishLotCard);
