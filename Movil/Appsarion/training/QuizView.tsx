@@ -385,6 +385,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     flexDirection: 'row',
+    paddingBottom: 25,
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: commonColors.background,

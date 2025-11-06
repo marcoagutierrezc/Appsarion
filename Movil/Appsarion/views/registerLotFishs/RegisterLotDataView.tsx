@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Button,
   TextInput,
   Keyboard,
+  ScrollView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import * as Location from 'expo-location';
 import { BASE_URL } from '../../services/connection/connection';
 import { obtenerCiudadesPorDepartamento, obtenerListaDepartamentos } from '../../utils/filters';
 import data from '../../data/colombia.json';
-import FormScreenWrapper from '../../components/FormScreenWrapper'; 
 
 export function RegisterLotDataView({ route, navigation }: any) {
   const idRole = useSelector((state: RootState) => state.auth.user?.idRole);
@@ -48,6 +48,10 @@ export function RegisterLotDataView({ route, navigation }: any) {
     // Reset municipio when departamento changes to avoid inconsistent state
     setSelectedMunicipio('');
   }, [selectedDepartamento]);
+
+  // Opciones para Pickers (se derivan de los estados existentes)
+  const departamentoOptions = useMemo(() => listDepartamento, [listDepartamento]);
+  const municipioOptions = useMemo(() => citiesFilter, [citiesFilter]);
 
   const obtenerCoordenadas = async () => {
     try {
@@ -125,81 +129,141 @@ export function RegisterLotDataView({ route, navigation }: any) {
   };
 
   return (
-    <FormScreenWrapper>
-      <Text style={styles.fieldLabel}>Nombre del Lote</Text>
-      <TextInput
-        value={lote}
-        onChangeText={setLote}
-        style={[styles.input, styles.textInput]}
-      />
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
+      {/* Header estilo registro de usuarios */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Registrar Lote</Text>
+          <Text style={styles.headerSubtitle}>Datos del lote</Text>
+        </View>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressSegment, { backgroundColor: '#0066cc' }]} />
+          <View style={[styles.progressSegment, { backgroundColor: '#0066cc' }]} />
+        </View>
+      </View>
 
-      <Text style={styles.fieldLabel}>Coordenadas</Text>
-      <TextInput
-        value={coordenadas}
-        editable={false}
-        style={[styles.input, styles.textInput, styles.readonly]}
-      />
-      <Button title="Obtener Coordenadas" onPress={obtenerCoordenadas} />
-  
-      <Text style={styles.label}>Departamento</Text>
-      <Picker
-        selectedValue={selectedDepartamento}
-        onValueChange={(itemValue) => setSelectedDepartamento(itemValue)}
-      >
-        <Picker.Item label="-- Selecciona un departamento --" value="" />
-        {listDepartamento.map((dep, index) => (
-          <Picker.Item key={index} label={dep} value={dep} />
-        ))}
-      </Picker>
-  
-      <Text style={styles.label}>Municipio</Text>
-      <Picker
-        selectedValue={selectedMunicipio}
-        onValueChange={(itemValue) => setSelectedMunicipio(itemValue)}
-      >
-        <Picker.Item label="-- Selecciona un municipio --" value="" />
-        {citiesFilter.map((mun, index) => (
-          <Picker.Item key={index} label={mun} value={mun} />
-        ))}
-      </Picker>
-  
-      <Text style={styles.fieldLabel}>Barrio</Text>
-      <TextInput
-        value={barrio}
-        onChangeText={setBarrio}
-        style={[styles.input, styles.textInput]}
-        autoCorrect={false}
-        autoCapitalize="words"
-      />
-      
-      <Text style={styles.fieldLabel}>Vereda</Text>
-      <TextInput
-        value={vereda}
-        onChangeText={setVereda}
-        multiline
-        numberOfLines={3}
-        textAlignVertical="top"
-        style={[styles.input, styles.textArea]}
-        autoCorrect={false}
-        autoCapitalize="words"
-      />
-  
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.buttonText}>Cancelar</Text>
+      {/* Formulario */}
+      <View style={styles.formSection}>
+        {/* Nombre del lote */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Nombre del Lote *</Text>
+          <View style={styles.inputWrapper}>
+            <MaterialCommunityIcons name="fish" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={lote}
+              onChangeText={setLote}
+              placeholder="Ej: Lote 1"
+              placeholderTextColor="#aaa"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+          </View>
+        </View>
+
+        {/* Coordenadas */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Coordenadas *</Text>
+          <View style={[styles.inputWrapper, styles.readonlyWrapper]}>
+            <MaterialCommunityIcons name="map-marker" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={coordenadas}
+              editable={false}
+              placeholder="Latitud, Longitud"
+              placeholderTextColor="#aaa"
+            />
+          </View>
+          <TouchableOpacity style={[styles.secondaryButtonInline, { marginTop: 8 }]} onPress={obtenerCoordenadas}>
+            <Text style={styles.secondaryButtonText}>Obtener Coordenadas</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Departamento */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Departamento *</Text>
+          <View style={styles.pickerWrapper}>
+            <MaterialCommunityIcons name="map-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+            <Picker
+              style={styles.picker}
+              selectedValue={selectedDepartamento}
+              onValueChange={(itemValue) => setSelectedDepartamento(String(itemValue))}
+            >
+              <Picker.Item label="Seleccione un departamento" value="" />
+              {departamentoOptions.map((dep) => (
+                <Picker.Item key={dep} label={dep} value={dep} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+
+        {/* Municipio */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Municipio *</Text>
+          <View style={styles.pickerWrapper}>
+            <MaterialCommunityIcons name="home-city-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+            <Picker
+              style={styles.picker}
+              selectedValue={selectedMunicipio}
+              onValueChange={(itemValue) => setSelectedMunicipio(String(itemValue))}
+            >
+              <Picker.Item label="Seleccione un municipio" value="" />
+              {municipioOptions.map((mun) => (
+                <Picker.Item key={mun} label={mun} value={mun} />
+              ))}
+            </Picker>
+          </View>
+        </View>
+
+        {/* Barrio */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Barrio *</Text>
+          <View style={styles.inputWrapper}>
+            <MaterialCommunityIcons name="home-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={barrio}
+              onChangeText={setBarrio}
+              placeholder="Ej: Centro"
+              placeholderTextColor="#aaa"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
+          </View>
+        </View>
+
+        {/* Vereda */}
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Vereda *</Text>
+          <View style={styles.inputWrapper}>
+            <MaterialCommunityIcons name="map" size={20} color="#0066cc" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              value={vereda}
+              onChangeText={setVereda}
+              placeholder="Ej: El Paraíso"
+              placeholderTextColor="#aaa"
+              autoCapitalize="words"
+              autoCorrect={false}
+              returnKeyType="done"
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Botones */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.secondaryButtonText}>Cancelar</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.finishButton]}
-          onPress={handleSubmit}
-          disabled={submitting}
-        >
-          <Text style={styles.buttonText}>{submitting ? 'Enviando...' : 'Finalizar'}</Text>
+        <TouchableOpacity style={[styles.primaryButton, submitting && { opacity: 0.6 }]} onPress={handleSubmit} disabled={submitting}>
+          <Text style={styles.primaryButtonText}>{submitting ? 'Enviando...' : 'Finalizar'}</Text>
+          {!submitting && <MaterialCommunityIcons name="check" size={18} color="#fff" style={{ marginLeft: 8 }} />}
         </TouchableOpacity>
       </View>
-    </FormScreenWrapper>
+    </ScrollView>
   );
 }
 
@@ -220,67 +284,150 @@ function normalizeRole(role: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
-    paddingBottom: 0,
+    backgroundColor: '#f8f9fa',
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+  /* Header */
+  header: {
+    backgroundColor: '#0066cc',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 24,
+  },
+  headerContent: {
+    marginBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#fff',
+    marginBottom: 2,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  progressBar: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  progressSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  /* Form Section */
+  formSection: {
+    padding: 20,
+    gap: 18,
+  },
+  /* Input Group */
+  inputGroup: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginLeft: 2,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    height: '100%',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    height: 52,
+  },
+  readonlyWrapper: {
+    backgroundColor: '#f5f7fa',
+  },
+  inputIcon: {
+    marginRight: 8,
   },
   input: {
-    marginBottom: 10,
+    flex: 1,
+    fontSize: 16,
+    color: '#1a1a1a',
+    padding: 0,
+    fontWeight: '500',
   },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    minHeight: 80,
-    backgroundColor: '#fff',
-  },
-  readonly: {
-    backgroundColor: '#f5f5f5',
-  },
-  label: {
-    marginTop: 10,
-    fontWeight: 'bold',
-  },
-  fieldLabel: {
-    marginTop: 6,
-    marginBottom: 6,
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-  },
-  row: {
+  /* Picker */
+  pickerWrapper: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginRight: 15,
-    marginBottom: 10,
-  },
-  button: {
-    paddingVertical: 5,
-    paddingHorizontal: 12,
     alignItems: 'center',
-    borderRadius: 5,
-    marginBottom: 30,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    paddingLeft: 12,
+    height: 52,
+    overflow: 'hidden',
   },
-  buttonText: {
-    color: 'white',
+  picker: {
+    flex: 1,
+    height: 52,
+    color: '#1a1a1a',
     fontSize: 16,
   },
-  finishButton: {
-    backgroundColor: '#28a745',
+  /* Buttons */
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    marginTop: 8,
   },
-  deleteButton: {
-    backgroundColor: '#dc3545',
+  primaryButton: {
+    flex: 1,
+    backgroundColor: '#0066cc',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    shadowColor: '#0066cc',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f0f5ff',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#0066cc',
+  },
+  secondaryButtonText: {
+    color: '#0066cc',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  secondaryButtonInline: {
+    backgroundColor: '#f0f5ff',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#0066cc',
+    paddingHorizontal: 18,
+    alignSelf: 'flex-start',
   },
 });
 

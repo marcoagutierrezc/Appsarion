@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 0,
+    paddingTop: 20,
     paddingBottom: 20,
   },
   greetingBox: {

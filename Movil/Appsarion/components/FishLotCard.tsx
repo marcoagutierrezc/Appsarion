@@ -1,10 +1,12 @@
 import React, { useState, useEffect, memo } from 'react';
 import { 
-  View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert, Platform 
+  View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, Alert 
 } from 'react-native';
 import { File, Directory, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { BASE_URL } from '../services/connection/connection';
+import { commonColors, commonStyles } from '../styles/commonStyles';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
  
 
@@ -93,43 +95,55 @@ const FishLotCard: React.FC<FishLotCardProps> = ({ fishLot, navigation }) => {
   };
 
   return (
-    <View style={styles.card}>
-      <Text>{`Lote: ${fishLot.lotName}`}</Text>
+    <View style={[commonStyles.card, styles.card]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        <MaterialCommunityIcons name="fish" size={22} color={commonColors.primary} style={{ marginRight: 8 }} />
+        <Text style={commonStyles.textLarge} numberOfLines={1}>{fishLot.lotName}</Text>
+      </View>
+      {fishLot.neighborhood ? (
+        <Text style={commonStyles.textSmall} numberOfLines={1}>Ubicación: {fishLot.neighborhood}</Text>
+      ) : null}
 
-      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(true)}>
-        <Text style={styles.buttonText}>Ver Evaluaciones</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Evaluacion - Datos Basicos', { fishLotId: fishLot.id, ubication: fishLot?.neighborhood ?? '' })}>
-        <Text style={styles.buttonText}>Realizar Evaluación</Text>
-      </TouchableOpacity>
+      <View style={styles.actionsRow}>
+        <TouchableOpacity style={[commonStyles.buttonSecondary, styles.buttonHalf]} onPress={() => setModalVisible(true)}>
+          <Text style={commonStyles.buttonSecondaryText}>Ver evaluaciones</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[commonStyles.buttonPrimary, styles.buttonHalf]}
+          onPress={() => navigation.navigate('Evaluacion - Datos Basicos', { fishLotId: fishLot.id, ubication: fishLot?.neighborhood ?? '' })}
+        >
+          <Text style={commonStyles.buttonPrimaryText}>Nueva evaluación</Text>
+        </TouchableOpacity>
+      </View>
 
-      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Evaluaciones del Lote</Text>
-            <ScrollView>
+      <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[commonStyles.card, styles.modalCard]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <MaterialCommunityIcons name="clipboard-list-outline" size={20} color={commonColors.primary} style={{ marginRight: 8 }} />
+              <Text style={commonStyles.textLarge}>Evaluaciones del lote</Text>
+            </View>
+            <ScrollView contentContainerStyle={{ paddingVertical: 4 }}>
               {evaluations.length > 0 ? (
                 evaluations.map((evaluation) => (
-                  <View key={evaluation.id} style={styles.evaluationItem}>
-                    <Text>{`Fecha: ${evaluation.date}`}</Text>
-                    <Text>{`Especie: ${evaluation.species}`}</Text>
-                    <Text>{`Peso Promedio: ${evaluation.averageWeight}g`}</Text>
-                    <Text>{`Cantidad: ${evaluation.quantity}`}</Text>
-                    <Text>{`Temperatura: ${evaluation.temperature}°C`}</Text>
-                    <TouchableOpacity
-                      style={styles.downloadButton}
-                      onPress={() => handleDownload(evaluation.id)}
-                    >
-                      <Text style={styles.buttonText}>Descargar Evaluación</Text>
+                  <View key={evaluation.id} style={styles.evalItem}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={commonStyles.textMedium}>{evaluation.date}</Text>
+                      <Text style={commonStyles.textSmall}>Temp: {evaluation.temperature}°C</Text>
+                    </View>
+                    <Text style={commonStyles.textSmall}>Especie: {evaluation.species} • Cant: {evaluation.quantity} • Peso: {evaluation.averageWeight}g</Text>
+                    <TouchableOpacity style={[commonStyles.buttonSuccess, styles.downloadBtn]} onPress={() => handleDownload(evaluation.id)}>
+                      <MaterialCommunityIcons name="download" size={18} color="#fff" style={{ marginRight: 6 }} />
+                      <Text style={commonStyles.buttonSuccessText}>Descargar PDF</Text>
                     </TouchableOpacity>
                   </View>
                 ))
               ) : (
-                <Text>No hay evaluaciones disponibles.</Text>
+                <Text style={commonStyles.textSmall}>No hay evaluaciones disponibles.</Text>
               )}
             </ScrollView>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-              <Text style={styles.buttonText}>Cerrar</Text>
+            <TouchableOpacity style={[commonStyles.buttonDanger, { marginTop: 8 }]} onPress={() => setModalVisible(false)}>
+              <Text style={commonStyles.buttonDangerText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -140,61 +154,36 @@ const FishLotCard: React.FC<FishLotCardProps> = ({ fishLot, navigation }) => {
 
 const styles = StyleSheet.create({
   card: {
-    padding: 15,
-    margin: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    elevation: 3,
+    marginBottom: 12,
   },
-  button: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    alignItems: 'center',
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  modalContainer: {
+  buttonHalf: {
     flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 20,
   },
-  modalContent: {
-    width: '90%',
-    backgroundColor: '#fff',
-    padding: 20,
+  modalCard: {
+    width: '100%',
+  },
+  evalItem: {
+    backgroundColor: commonColors.background,
     borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    borderWidth: 1,
+    borderColor: commonColors.border,
+    padding: 12,
     marginBottom: 10,
   },
-  evaluationItem: {
-    width: '100%',
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 5,
-  },
-  downloadButton: {
-    marginTop: 5,
-    padding: 8,
-    backgroundColor: '#28a745',
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  closeButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#dc3545',
-    borderRadius: 5,
-    alignItems: 'center',
+  downloadBtn: {
+    marginTop: 8,
   },
 });
 

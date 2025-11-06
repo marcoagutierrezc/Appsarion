@@ -1,11 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Alert, FlatList, ListRenderItemInfo } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Alert, FlatList, ListRenderItemInfo, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { RootState } from '../../store';
 import FishLotCard from '../../components/FishLotCard';
 type FishLot = { id: number; lotName: string; neighborhood: string };
 import { BASE_URL } from '../../services/connection/connection';
+import { commonColors } from '../../styles/commonStyles';
 
 export function CrudFishLotView({ navigation }: any) {
   const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
@@ -89,31 +91,43 @@ export function CrudFishLotView({ navigation }: any) {
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={Array.isArray(fishLots) ? fishLots : []}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
-        removeClippedSubviews
-        initialNumToRender={8}
-        windowSize={5}
-      />
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <View style={styles.container}>
+        <FlatList
+          contentContainerStyle={styles.listContent}
+          data={Array.isArray(fishLots) ? fishLots : []}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={renderItem}
+          removeClippedSubviews
+          initialNumToRender={8}
+          windowSize={5}
+        />
 
-      <TouchableOpacity
-        style={styles.floatingButton}
-        onPress={() => navigation.navigate('Registrar Lote')}
-      >
-        <Text style={styles.textButton}>+</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.floatingButton}
+          onPress={() => navigation.navigate('Registrar Lote')}
+          accessibilityLabel="Registrar nuevo lote"
+        >
+          <Text style={styles.textButton}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
+  safeArea: {
     flex: 1,
-    backgroundColor: '#34495e',
+    backgroundColor: commonColors.background,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: commonColors.background,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  listContent: {
+    paddingBottom: 80,
   },
   textButton: {
     color: 'white',
@@ -124,7 +138,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 20,
-    backgroundColor: 'gray',
+    backgroundColor: commonColors.primary,
     borderRadius: 30,
     width: 60,
     height: 60,
