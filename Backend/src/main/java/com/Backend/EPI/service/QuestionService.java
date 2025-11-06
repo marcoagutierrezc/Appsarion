@@ -5,12 +5,12 @@ import com.Backend.EPI.domain.dto.QuestionDTO;
 import com.Backend.EPI.persistence.crud.UserAnswersRepository;
 import com.Backend.EPI.persistence.entity.Question;
 import com.Backend.EPI.persistence.entity.Answer;
-import com.Backend.EPI.persistence.entity.Category;
 import com.Backend.EPI.persistence.crud.QuestionRepository;
 import com.Backend.EPI.persistence.crud.AnswerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import java.sql.Timestamp;
 import java.util.*;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +32,7 @@ public class QuestionService {
 
 
     @Transactional
+    @CacheEvict(value = {"allQuestions", "questionById", "randomQuestions"}, allEntries = true)
     public Question createQuestion(Question question) {
         // Guardar la pregunta primero sin respuestas
         Question savedQuestion = questionRepository.save(question);
@@ -49,6 +50,7 @@ public class QuestionService {
     }
 
     @Transactional
+    @CacheEvict(value = {"allQuestions", "questionById", "randomQuestions"}, allEntries = true)
     public boolean addAnswersToQuestion(Long questionId, List<Answer> answers) {
         // Buscar la pregunta por ID
         Question question = questionRepository.findById(questionId).orElse(null);
@@ -68,33 +70,38 @@ public class QuestionService {
     }
 
 
+    /**
+     * Obtiene todas las preguntas con caché y consulta optimizada
+     * Reducción de N+1 queries
+     */
+    @Cacheable(value = "allQuestions", unless = "#result == null || #result.isEmpty()")
     public List<QuestionDTO> getAllQuestions() {
-        List<Question> questions = questionRepository.findAll();
+        // Usar consulta optimizada que carga todo en una sola query
+        List<Question> questions = questionRepository.findAllWithAnswersAndCategory();
 
         return questions.stream().map(question -> {
             QuestionDTO dto = new QuestionDTO();
             dto.setId(question.getId());
             dto.setQuestionText(question.getQuestionText());
+
             if (question.getCategory() != null) {
                 dto.setCategoryName(question.getCategory().getCategoryName());
             } else {
-                dto.setCategoryName("Sin categoría"); // Asigna un valor predeterminado
+                dto.setCategoryName("Sin categoría");
             }
-            dto.setCategoryName(question.getCategory().getCategoryName());
-            dto.setAnswers(question.getAnswers().stream().map(answer -> {
-                AnswerDTO answerDTO = new AnswerDTO(answer.getId(), answer.getAnswerText(), answer.getIsCorrect());
-                answerDTO.setId(answer.getId());
-                answerDTO.setAnswerText(answer.getAnswerText());
-                answerDTO.setIsCorrect(answer.getIsCorrect());
-                return answerDTO;
-            }).collect(Collectors.toList()));
+
+            dto.setAnswers(question.getAnswers().stream().map(answer ->
+                new AnswerDTO(answer.getId(), answer.getAnswerText(), answer.getIsCorrect())
+            ).collect(Collectors.toList()));
+
             return dto;
         }).collect(Collectors.toList());
     }
 
 
+    @Cacheable(value = "questionById", key = "#id", unless = "#result == null")
     public QuestionDTO getQuestionById(Long id) {
-        Question question = questionRepository.findById(id)
+        Question question = questionRepository.findByIdWithAnswersAndCategory(id)
                 .orElseThrow(() -> new NoSuchElementException("Question not found with id " + id));
 
         // Convierte la entidad a DTO
@@ -119,28 +126,43 @@ public class QuestionService {
 
 
     @Transactional
+    @CacheEvict(value = {"allQuestions", "questionById", "randomQuestions"}, allEntries = true)
     public void deleteQuestion(Long id) {
         questionRepository.deleteById(id);
     }
 
 
-    @Transactional
+    /**
+     * Obtiene preguntas aleatorias de forma optimizada
+     * 1. Primero obtiene solo los IDs (consulta rápida)
+     * 2. Selecciona IDs aleatorios
+     * 3. Carga solo esas preguntas con JOIN FETCH
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = "randomQuestions", key = "#numberOfQuestions", unless = "#result == null || #result.isEmpty()")
     public List<Question> getRandomQuestions(int numberOfQuestions) {
-        List<Question> allQuestions = questionRepository.findAll();
-        if (allQuestions.size() <= numberOfQuestions) {
-            return allQuestions; // Si hay menos preguntas que las solicitadas, devuelve todas
+        // Obtener solo los IDs (consulta muy rápida)
+        List<Long> allQuestionIds = questionRepository.findAllQuestionIds();
+
+        if (allQuestionIds.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        // Seleccionar preguntas aleatorias
-        Random random = new Random();
-        return random.ints(0, allQuestions.size())
-                .distinct()
-                .limit(numberOfQuestions)
-                .mapToObj(allQuestions::get)
-                .collect(Collectors.toList());
+        if (allQuestionIds.size() <= numberOfQuestions) {
+            // Si hay menos preguntas que las solicitadas, cargar todas
+            return questionRepository.findAllWithAnswersAndCategory();
+        }
+
+        // Seleccionar IDs aleatorios
+        Collections.shuffle(allQuestionIds);
+        List<Long> selectedIds = allQuestionIds.subList(0, numberOfQuestions);
+
+        // Cargar solo las preguntas seleccionadas con una sola consulta optimizada
+        return questionRepository.findAllByIdsWithAnswersAndCategory(selectedIds);
     }
 
     @Transactional
+    @CacheEvict(value = {"allQuestions", "questionById", "randomQuestions"}, allEntries = true)
     public Question updateQuestion(Long id, Question updatedQuestion) {
         // Buscar la pregunta existente
         Question existingQuestion = questionRepository.findById(id)

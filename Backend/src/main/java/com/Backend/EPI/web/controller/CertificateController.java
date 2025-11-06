@@ -3,35 +3,34 @@ package com.Backend.EPI.web.controller;
 import com.Backend.EPI.domain.dto.CertificateDTO;
 import com.Backend.EPI.persistence.entity.Certificate;
 import com.Backend.EPI.service.CertificateService;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-import com.itextpdf.text.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
-import com.itextpdf.text.pdf.PdfWriter;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
-
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 
 
 @RestController
@@ -78,22 +77,20 @@ public class CertificateController {
 
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            Document document = new Document(PageSize.A4, 50, 50, 50, 50); // Márgenes
-            PdfWriter.getInstance(document, out);
-            document.open();
-
-            // Fuentes
-            Font titleFont = new Font(Font.FontFamily.HELVETICA, 28, Font.BOLD, BaseColor.BLACK);
-            Font subtitleFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD, BaseColor.DARK_GRAY);
-            Font normalFont = new Font(Font.FontFamily.HELVETICA, 14, Font.NORMAL);
-            Font boldFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD);
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
+            document.setMargins(50, 50, 50, 50);
 
             // Agregar logo
             try {
-                String logoPath = getClass().getClassLoader().getResource("logo.png").getPath();
-                Image logo = Image.getInstance(logoPath);
-                logo.scaleToFit(150, 150);
-                logo.setAlignment(Element.ALIGN_CENTER);
+                ClassPathResource logoResource = new ClassPathResource("logo.png");
+                InputStream logoStream = logoResource.getInputStream();
+                byte[] logoBytes = logoStream.readAllBytes();
+                Image logo = new Image(ImageDataFactory.create(logoBytes));
+                logo.setWidth(150);
+                logo.setHeight(150);
+                logo.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
                 document.add(logo);
             } catch (Exception imgEx) {
                 System.out.println("Advertencia: No se pudo cargar la imagen del logo.");
@@ -101,46 +98,61 @@ public class CertificateController {
             }
 
             // Título del certificado
-            Paragraph title = new Paragraph("CERTIFICADO DE CAPACITACIÓN", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
+            Paragraph title = new Paragraph("CERTIFICADO DE CAPACITACIÓN")
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))
+                    .setFontSize(28)
+                    .setFontColor(ColorConstants.BLACK)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginTop(20);
             document.add(title);
 
-            document.add(new Paragraph("\n\n"));
+            document.add(new Paragraph("\n"));
 
             // Información principal
-            Paragraph subtitle = new Paragraph("Certifica a:", subtitleFont);
-            subtitle.setAlignment(Element.ALIGN_CENTER);
+            Paragraph subtitle = new Paragraph("Certifica a:")
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))
+                    .setFontSize(20)
+                    .setFontColor(new DeviceRgb(64, 64, 64))
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(subtitle);
 
-            Paragraph userName = new Paragraph(certificate.getUser().getName(), titleFont);
-            userName.setAlignment(Element.ALIGN_CENTER);
+            Paragraph userName = new Paragraph(certificate.getUser().getName())
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))
+                    .setFontSize(28)
+                    .setFontColor(ColorConstants.BLACK)
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(userName);
 
-            document.add(new Paragraph("\n\n"));
+            document.add(new Paragraph("\n"));
 
             // Curso
-            Paragraph courseText = new Paragraph("Por completar satisfactoriamente el curso:", normalFont);
-            courseText.setAlignment(Element.ALIGN_CENTER);
+            Paragraph courseText = new Paragraph("Por completar satisfactoriamente el curso:")
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA))
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(courseText);
 
-            Paragraph courseName = new Paragraph("PISCICULTURA BASADO EN LA NORMA NTC 1443", subtitleFont);
-            courseName.setAlignment(Element.ALIGN_CENTER);
+            Paragraph courseName = new Paragraph("PISCICULTURA BASADO EN LA NORMA NTC 1443")
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))
+                    .setFontSize(20)
+                    .setFontColor(new DeviceRgb(64, 64, 64))
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(courseName);
 
-            document.add(new Paragraph("\n\n"));
+            document.add(new Paragraph("\n"));
 
             // Tabla con detalles del certificado
-            PdfPTable table = new PdfPTable(2);
-            table.setWidthPercentage(80);
-            table.setSpacingBefore(20f);
-            table.setHorizontalAlignment(Element.ALIGN_CENTER);
+            Table table = new Table(UnitValue.createPercentArray(new float[]{1, 2}));
+            table.setWidth(UnitValue.createPercentValue(80));
+            table.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
+            table.setMarginTop(20);
 
-            addTableCell(table, "Código del Certificado:", boldFont);
-            addTableCell(table, certificate.getCertificateCode(), normalFont);
-            addTableCell(table, "Evaluación:", boldFont);
-            addTableCell(table, String.valueOf(certificate.getEvaluation().getId()), normalFont);
-            addTableCell(table, "Emitido el:", boldFont);
-            addTableCell(table, certificate.getIssuedAt().toString(), normalFont);
+            addTableCell(table, "Código del Certificado:", true);
+            addTableCell(table, certificate.getCertificateCode(), false);
+            addTableCell(table, "Evaluación:", true);
+            addTableCell(table, String.valueOf(certificate.getEvaluation().getId()), false);
+            addTableCell(table, "Emitido el:", true);
+            addTableCell(table, certificate.getIssuedAt().toString(), false);
 
             document.add(table);
 
@@ -148,17 +160,22 @@ public class CertificateController {
 
             // Agregar firma
             try {
-                String firmaPath = getClass().getClassLoader().getResource("firma.png").getPath();
-                Image firma = Image.getInstance(firmaPath);
-                firma.scaleToFit(150, 50);
-                firma.setAlignment(Element.ALIGN_CENTER);
+                ClassPathResource firmaResource = new ClassPathResource("firma.png");
+                InputStream firmaStream = firmaResource.getInputStream();
+                byte[] firmaBytes = firmaStream.readAllBytes();
+                Image firma = new Image(ImageDataFactory.create(firmaBytes));
+                firma.setWidth(150);
+                firma.setHeight(50);
+                firma.setHorizontalAlignment(com.itextpdf.layout.properties.HorizontalAlignment.CENTER);
                 document.add(firma);
             } catch (Exception imgEx) {
                 System.out.println("Advertencia: No se pudo cargar la firma.");
             }
 
-            Paragraph firmante = new Paragraph("Director Académico", boldFont);
-            firmante.setAlignment(Element.ALIGN_CENTER);
+            Paragraph firmante = new Paragraph("Director Académico")
+                    .setFont(PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD))
+                    .setFontSize(14)
+                    .setTextAlignment(TextAlignment.CENTER);
             document.add(firmante);
 
             document.close();
@@ -179,9 +196,11 @@ public class CertificateController {
         }
     }
 
-    private void addTableCell(PdfPTable table, String text, Font font) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, font));
-        cell.setBorder(Rectangle.NO_BORDER);
+    private void addTableCell(Table table, String text, boolean isBold) throws Exception {
+        Cell cell = new Cell().add(new Paragraph(text)
+                .setFont(PdfFontFactory.createFont(isBold ? StandardFonts.HELVETICA_BOLD : StandardFonts.HELVETICA))
+                .setFontSize(14));
+        cell.setBorder(Border.NO_BORDER);
         table.addCell(cell);
     }
 

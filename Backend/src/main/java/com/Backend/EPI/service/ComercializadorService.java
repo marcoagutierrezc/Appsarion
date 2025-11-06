@@ -24,4 +24,8 @@ public class ComercializadorService {
     public List<Comercializador> getAllComercializadores() {
         return comercializadorRepository.findAll();
     }
+
+    public void delete(Long id) {
+        comercializadorRepository.deleteById(id);
+    }
 }

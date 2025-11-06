@@ -25,4 +25,7 @@ public class EvaluadorService {
         return (List<Evaluador>) evaluadorRepository.findAll();
     }
 
+    public void delete(Long id) {
+        evaluadorRepository.deleteById(id);
+    }
 }

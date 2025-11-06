@@ -16,4 +16,7 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     // Método para encontrar un Admin por userId
     Optional<Admin> findByUserId(Long userId);
+
+    // Método para eliminar un Admin por userId
+    void deleteByUserId(Long userId);
 }

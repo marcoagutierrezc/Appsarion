@@ -57,6 +57,7 @@ public class RealDataController {
         realData.setSpecies(realDataDTO.getSpecies());
         realData.setAverageWeight(realDataDTO.getAverageWeight());
         realData.setQuantity(realDataDTO.getQuantity());
+        realData.setObservations(realDataDTO.getObservations());
 
         return new ResponseEntity<>(realDataService.save(realData), HttpStatus.CREATED);
     }

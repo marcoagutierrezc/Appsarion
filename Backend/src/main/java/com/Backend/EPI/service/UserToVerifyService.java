@@ -4,19 +4,20 @@ import com.Backend.EPI.domain.dto.*;
 import com.Backend.EPI.persistence.crud.UserToVerifyCrudRepository;
 import com.Backend.EPI.persistence.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class UserToVerifyService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserToVerifyService.class);
 
     @Autowired
     private UserToVerifyCrudRepository userToVerifyCrudRepository;
@@ -38,6 +39,12 @@ public class UserToVerifyService {
 
     @Autowired
     private AcademicoService academicoService;
+
+    @Autowired
+    private BackblazeService backblazeService;
+
+    @Autowired
+    private GoogleEmailService emailService;
 
     @Transactional
     public User validateAndSaveUser(Long userToVerifyId, RoleDataDTO roleDataDTO) {
@@ -136,38 +143,91 @@ public class UserToVerifyService {
         userToVerify.setRole(role.trim());
         userToVerify.setEstado(estado != null ? estado : "activo");
 
-        // Guardar el archivo en el servidor y establecer la ruta
-        try{
-            if (!supportingDocument.isEmpty()) {
-                String filePath = saveFile(supportingDocument);
-                userToVerify.setSupportingDocument(filePath);
+        // Primero guardamos el usuario para obtener su ID
+        UserToVerify savedUserToVerify = userToVerifyCrudRepository.save(userToVerify);
+
+        // Subir el archivo a Backblaze si se proporciona
+        try {
+            if (supportingDocument != null && !supportingDocument.isEmpty()) {
+                // Subir a Backblaze y obtener la URL
+                String backblazeUrl = backblazeService.uploadSupportDocument(savedUserToVerify.getId(), supportingDocument);
+                savedUserToVerify.setSupportingDocument(backblazeUrl);
+
+                // Actualizar el registro con la URL de Backblaze
+                return userToVerifyCrudRepository.save(savedUserToVerify);
+            } else {
+                savedUserToVerify.setSupportingDocument(null); // No hay documento por ahora
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Error al guardar el archivo", e);
+        } catch (Exception e) {
+            // Si falla la subida a Backblaze, eliminar el usuario creado
+            userToVerifyCrudRepository.delete(savedUserToVerify);
+            throw new RuntimeException("Error al subir el documento a Backblaze: " + e.getMessage(), e);
         }
 
-        return userToVerifyCrudRepository.save(userToVerify);
+        return savedUserToVerify;
     }
 
-    // Método para guardar el archivo en el sistema de archivos
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-    public String saveFile(MultipartFile file) throws IOException {
-        String filePath = uploadDir + "/" + file.getOriginalFilename();
-        File destinationFile = new File(filePath);
-        File directory = destinationFile.getParentFile();
-
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        file.transferTo(destinationFile);
-        return filePath;
-    }
 
     // Método para obtener todos los usuarios pendientes de verificación
     public List<UserToVerify> getAllPendingUsers() {
         return (List<UserToVerify>) userToVerifyCrudRepository.findAll();
+    }
+
+    /**
+     * Aprueba un usuario pendiente de verificación
+     * Mueve el usuario a la tabla de usuarios y envía correo de aprobación
+     */
+    @Transactional
+    public void approveUser(Long userToVerifyId, RoleDataDTO roleDataDTO) {
+        Optional<UserToVerify> userToVerifyOptional = userToVerifyCrudRepository.findById(userToVerifyId);
+
+        if (!userToVerifyOptional.isPresent()) {
+            throw new IllegalArgumentException("Usuario pendiente de verificación no encontrado");
+        }
+
+        UserToVerify userToVerify = userToVerifyOptional.get();
+
+        try {
+            // Crear el usuario en la tabla usuarios
+            User savedUser = validateAndSaveUser(userToVerifyId, roleDataDTO);
+
+            // Enviar email de aprobación
+            emailService.sendApprovalEmail(userToVerify.getEmail(), userToVerify.getName());
+
+            logger.info("Usuario aprobado exitosamente: {}", userToVerify.getEmail());
+        } catch (Exception e) {
+            logger.error("Error al aprobar usuario: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al aprobar usuario: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Rechaza un usuario pendiente de verificación
+     * Elimina el usuario de la tabla pendientes y envía correo de rechazo
+     */
+    @Transactional
+    public void rejectUser(Long userToVerifyId, String rejectionReason) {
+        Optional<UserToVerify> userToVerifyOptional = userToVerifyCrudRepository.findById(userToVerifyId);
+
+        if (!userToVerifyOptional.isPresent()) {
+            throw new IllegalArgumentException("Usuario pendiente de verificación no encontrado");
+        }
+
+        UserToVerify userToVerify = userToVerifyOptional.get();
+        String email = userToVerify.getEmail();
+        String name = userToVerify.getName();
+
+        try {
+            // Eliminar el usuario de la tabla de pendientes
+            userToVerifyCrudRepository.delete(userToVerify);
+
+            // Enviar email de rechazo
+            emailService.sendRejectionEmail(email, name, rejectionReason);
+
+            logger.info("Usuario rechazado exitosamente: {}", email);
+        } catch (Exception e) {
+            logger.error("Error al rechazar usuario: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al rechazar usuario: " + e.getMessage(), e);
+        }
     }
 }

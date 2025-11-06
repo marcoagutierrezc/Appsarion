@@ -25,4 +25,7 @@ public class PiscicultorService {
         return piscicultorRepository.findAll();
     }
     
+    public void delete(Long id) {
+        piscicultorRepository.deleteById(id);
+    }
 }

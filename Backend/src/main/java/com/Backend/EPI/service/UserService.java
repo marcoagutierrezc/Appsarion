@@ -17,13 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import com.Backend.EPI.persistence.entity.Admin;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -61,10 +59,14 @@ public class UserService {
         user.setDocumentNumber(userDTO.getDocumentNumber());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setEmail(userDTO.getEmail());
-        String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
-        user.setPassword(userDTO.getPassword()); // Guarda la contraseña en texto plano
+    String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+    // Guardar contraseña codificada (si viene ya codificada desde users_to_verify también funciona)
+    user.setPassword(userDTO.getPassword() != null && userDTO.getPassword().startsWith("$2a$")
+        ? userDTO.getPassword()
+        : encodedPassword);
         user.setJustification(userDTO.getJustification());
-        //user.setSupportingDocument(userDTO.getSupportingDocument());
+    // Persistir el documento de soporte (ruta local o URL si ya fue subida)
+    user.setSupportingDocument(userDTO.getSupportingDocument());
         user.setRole(userDTO.getRole());
         user.setEstado(userDTO.getEstado() != null ? userDTO.getEstado() : "activo");
 
@@ -404,4 +406,191 @@ public class UserService {
         }
     }
 
+    /**
+     * Obtiene un usuario con todos sus datos incluyendo datos de su rol específico
+     */
+    public Map<String, Object> getUserWithRoleData(Long userId) {
+        Optional<User> userOptional = userCrudRepository.findById(userId);
+
+        if (!userOptional.isPresent()) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+
+        User user = userOptional.get();
+        Map<String, Object> userMap = new java.util.HashMap<>();
+
+        // Agregar datos básicos del usuario
+        userMap.put("id", user.getId());
+        userMap.put("name", user.getName());
+        userMap.put("email", user.getEmail());
+        userMap.put("documentType", user.getDocumentType());
+        userMap.put("documentNumber", user.getDocumentNumber());
+        userMap.put("phoneNumber", user.getPhoneNumber());
+        userMap.put("justification", user.getJustification());
+        userMap.put("supportingDocument", user.getSupportingDocument());
+        userMap.put("role", user.getRole());
+        userMap.put("estado", user.getEstado());
+
+        // Agregar datos específicos del rol
+        switch (user.getRole()) {
+            case "Piscicultor":
+                Optional<Piscicultor> piscicultor = piscicultorService.findByUserId(userId);
+                piscicultor.ifPresent(p -> {
+                    userMap.put("roleData", java.util.Collections.singletonMap("piscicultor", p));
+                });
+                break;
+            case "Evaluador":
+                Optional<Evaluador> evaluador = evaluadorService.findByUserId(userId);
+                evaluador.ifPresent(e -> {
+                    userMap.put("roleData", java.util.Collections.singletonMap("evaluador", e));
+                });
+                break;
+            case "Comercializador":
+                Optional<Comercializador> comercializador = comercializadorService.findByUserId(userId);
+                comercializador.ifPresent(c -> {
+                    userMap.put("roleData", java.util.Collections.singletonMap("comercializador", c));
+                });
+                break;
+            case "Academico":
+                Optional<Academico> academico = academicoService.findByUserId(userId);
+                academico.ifPresent(a -> {
+                    userMap.put("roleData", java.util.Collections.singletonMap("academico", a));
+                });
+                break;
+            case "Admin":
+                userMap.put("roleData", java.util.Collections.singletonMap("admin", "Administrador"));
+                break;
+        }
+
+        return userMap;
+    }
+
+    /**
+     * Cambia el rol de un usuario
+     * Elimina los datos de rol anterior y crea datos del nuevo rol
+     */
+    @Transactional
+    public User changeUserRole(Long userId, String newRole) {
+        Optional<User> userOptional = userCrudRepository.findById(userId);
+
+        if (!userOptional.isPresent()) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+
+        User user = userOptional.get();
+        String oldRole = user.getRole();
+
+        // Validar que el nuevo rol sea válido
+        if (!isValidRole(newRole)) {
+            throw new IllegalArgumentException("Rol no válido: " + newRole);
+        }
+
+        // No permitir cambiar si es el mismo rol
+        if (oldRole.equals(newRole)) {
+            return user;
+        }
+
+        // Eliminar datos del rol anterior
+        deleteRoleData(userId, oldRole);
+
+        // Actualizar el rol en la tabla users
+        user.setRole(newRole);
+        User updatedUser = userCrudRepository.save(user);
+
+        // Crear datos vacíos para el nuevo rol (el usuario debe completarlos después)
+        createEmptyRoleData(updatedUser, newRole);
+
+        return updatedUser;
+    }
+
+    /**
+     * Elimina un usuario y todos sus datos asociados
+     */
+    @Transactional
+    public void deleteUser(Long userId) {
+        Optional<User> userOptional = userCrudRepository.findById(userId);
+
+        if (!userOptional.isPresent()) {
+            throw new IllegalArgumentException("Usuario no encontrado");
+        }
+
+        User user = userOptional.get();
+
+        // Eliminar datos del rol
+        deleteRoleData(userId, user.getRole());
+
+        // Eliminar el usuario
+        userCrudRepository.deleteById(userId);
+    }
+
+    /**
+     * Elimina los datos asociados al rol de un usuario
+     */
+    private void deleteRoleData(Long userId, String role) {
+        switch (role) {
+            case "Piscicultor":
+                Optional<Piscicultor> piscicultor = piscicultorService.findByUserId(userId);
+                piscicultor.ifPresent(p -> piscicultorService.delete(p.getId()));
+                break;
+            case "Evaluador":
+                Optional<Evaluador> evaluador = evaluadorService.findByUserId(userId);
+                evaluador.ifPresent(e -> evaluadorService.delete(e.getId()));
+                break;
+            case "Comercializador":
+                Optional<Comercializador> comercializador = comercializadorService.findByUserId(userId);
+                comercializador.ifPresent(c -> comercializadorService.delete(c.getId()));
+                break;
+            case "Academico":
+                Optional<Academico> academico = academicoService.findByUserId(userId);
+                academico.ifPresent(a -> academicoService.delete(a.getId()));
+                break;
+            case "Admin":
+                adminRepository.deleteByUserId(userId);
+                break;
+        }
+    }
+
+    /**
+     * Crea datos vacíos para un nuevo rol
+     */
+    private void createEmptyRoleData(User user, String role) {
+        switch (role) {
+            case "Piscicultor":
+                Piscicultor piscicultor = new Piscicultor();
+                piscicultor.setUser(user);
+                piscicultorService.save(piscicultor);
+                break;
+            case "Evaluador":
+                Evaluador evaluador = new Evaluador();
+                evaluador.setUser(user);
+                evaluadorService.save(evaluador);
+                break;
+            case "Comercializador":
+                Comercializador comercializador = new Comercializador();
+                comercializador.setUser(user);
+                comercializadorService.save(comercializador);
+                break;
+            case "Academico":
+                Academico academico = new Academico();
+                academico.setUser(user);
+                academicoService.save(academico);
+                break;
+            case "Admin":
+                Admin admin = new Admin();
+                admin.setUserId(user.getId());
+                adminRepository.save(admin);
+                break;
+        }
+    }
+
+    /**
+     * Valida si un rol es válido
+     */
+    private boolean isValidRole(String role) {
+        return role.equals("Piscicultor") ||
+               role.equals("Evaluador") ||
+               role.equals("Comercializador") ||
+               role.equals("Academico") ||
+               role.equals("Admin");
+    }
 }

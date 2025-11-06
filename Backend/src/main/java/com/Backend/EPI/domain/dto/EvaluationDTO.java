@@ -6,12 +6,15 @@ public class EvaluationDTO {
 
     private Long id;
     private Long userId;
-    private Integer score;
+    private Double score;
     private String status;
     private String createdAt;
     private String updatedAt;
 
     private List<UserAnswerDTO> userAnswers;
+
+    // Nuevo: resultados detallados incluyendo respuesta correcta
+    private List<EvaluationAnswerResultDTO> results;
 
     // Getters y Setters
     public Long getId() {
@@ -30,11 +33,11 @@ public class EvaluationDTO {
         this.userId = userId;
     }
 
-    public Integer getScore() {
+    public Double getScore() {
         return score;
     }
 
-    public void setScore(Integer score) {
+    public void setScore(Double score) {
         this.score = score;
     }
 
@@ -68,5 +71,13 @@ public class EvaluationDTO {
 
     public void setUserAnswers(List<UserAnswerDTO> userAnswers) {
         this.userAnswers = userAnswers;
+    }
+
+    public List<EvaluationAnswerResultDTO> getResults() {
+        return results;
+    }
+
+    public void setResults(List<EvaluationAnswerResultDTO> results) {
+        this.results = results;
     }
 }

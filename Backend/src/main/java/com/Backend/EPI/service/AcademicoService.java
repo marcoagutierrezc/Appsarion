@@ -24,6 +24,8 @@ public class AcademicoService {
     public List<Academico> getAllAcademicos(){
         return (List<Academico>) academicoRepository.findAll();
     }
+
+    public void delete(Long id) {
+        academicoRepository.deleteById(id);
+    }
 }
-
-

@@ -51,6 +51,9 @@ public class RealDataDTO {
     private BigDecimal averageWeight;
     private Integer quantity;
 
+    // Nuevo: Observaciones del evaluador
+    private String observations;
+
     // Getters and Setters
     public Long getFishLotId() {
         return fishLotId;
@@ -194,5 +197,13 @@ public class RealDataDTO {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public void setObservations(String observations) {
+        this.observations = observations;
     }
 }

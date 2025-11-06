@@ -27,11 +27,16 @@ dependencies {
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
     implementation 'org.springframework.security:spring-security-core:6.3.5'
     implementation 'com.itextpdf:itext7-core:7.2.3'
-    implementation 'com.itextpdf:itextpdf:5.5.13.3'
+    implementation 'com.itextpdf:html2pdf:4.0.3'
     implementation 'mysql:mysql-connector-java:8.0.33'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
     runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
     implementation 'org.eclipse.persistence:eclipselink:4.0.1'
+
+    // AWS SDK V2 para Backblaze B2 (S3-Compatible API)
+    implementation platform('software.amazon.awssdk:bom:2.20.26')
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:auth'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

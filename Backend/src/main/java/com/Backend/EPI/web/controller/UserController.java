@@ -125,5 +125,59 @@ public class UserController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            Optional<User> userOptional = userService.getUser(id);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                // Retornar usuario con datos de su rol específico
+                return new ResponseEntity<>(userService.getUserWithRoleData(id), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Usuario no encontrado", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al obtener usuario: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
+    /**
+     * Cambiar el rol de un usuario
+     * PUT /users/{id}/role
+     * Body: { "newRole": "Piscicultor" }
+     */
+    @PutMapping("/{id}/role")
+    public ResponseEntity<?> changeUserRole(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            String newRole = body.get("newRole");
+            if (newRole == null || newRole.trim().isEmpty()) {
+                return new ResponseEntity<>("El nuevo rol no puede estar vacío", HttpStatus.BAD_REQUEST);
+            }
+
+            User updatedUser = userService.changeUserRole(id, newRole);
+            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al cambiar el rol: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Eliminar un usuario
+     * DELETE /users/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return new ResponseEntity<>("Usuario eliminado exitosamente", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error al eliminar usuario: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

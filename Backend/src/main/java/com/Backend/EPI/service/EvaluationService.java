@@ -2,6 +2,7 @@ package com.Backend.EPI.service;
 
 import com.Backend.EPI.domain.dto.EvaluationDTO;
 import com.Backend.EPI.domain.dto.UserAnswerDTO;
+import com.Backend.EPI.domain.dto.EvaluationAnswerResultDTO;
 import com.Backend.EPI.persistence.crud.AnswerRepository;
 import com.Backend.EPI.persistence.crud.EvaluationRepository;
 import com.Backend.EPI.persistence.crud.QuestionRepository;
@@ -15,12 +16,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class EvaluationService {
@@ -37,68 +38,126 @@ public class EvaluationService {
     @Autowired
     private AnswerRepository answerRepository;
 
+    /**
+     * Evalúa las respuestas del usuario con nota en escala 0–5 con decimales.
+     * Guarda en BD el entero redondeado (compatibilidad con columna INT),
+     * y retorna en el DTO el decimal (scoreDecimal) y métricas de acierto.
+     */
     public EvaluationDTO evaluate(Long userId, List<UserAnswerDTO> userAnswers) {
-        System.out.println("Evaluating userId: " + userId + ", answers: " + userAnswers);
-
         // Crear la evaluación
         Evaluation evaluation = new Evaluation();
         evaluation.setUserId(userId);
-        evaluation.setScore(0);
+        evaluation.setScore(0); // entero en la entidad
         evaluation.setStatus(Evaluation.EvaluationStatus.PENDING);
         evaluation.setCreatedAt(Timestamp.from(Instant.now()));
         evaluation.setUpdatedAt(Timestamp.from(Instant.now()));
 
         evaluation = evaluationRepository.save(evaluation);
 
-        int correctAnswers = 0;
-        double score = 0.0;
-
+        // Eliminar respuestas duplicadas por pregunta (última respuesta por pregunta prevalece)
         Map<Long, UserAnswerDTO> uniqueAnswers = new LinkedHashMap<>();
         for (UserAnswerDTO dto : userAnswers) {
-            uniqueAnswers.putIfAbsent(dto.getQuestionId(), dto); // solo se guarda la primera aparición
+            uniqueAnswers.put(dto.getQuestionId(), dto);
         }
 
-        // Evaluar las respuestas del usuario
+        // Cargar preguntas/respuestas necesarias
+        List<Long> questionIds = new ArrayList<>(uniqueAnswers.keySet());
+        List<Long> answerIds = uniqueAnswers.values().stream()
+                .map(UserAnswerDTO::getAnswerId)
+                .collect(Collectors.toList());
+
+        List<Question> questions = questionRepository.findAllByIdsWithAnswersAndCategory(questionIds);
+        Map<Long, Question> questionMap = questions.stream()
+                .collect(Collectors.toMap(Question::getId, q -> q));
+
+        List<Answer> selectedAnswers = answerRepository.findAllByIds(answerIds);
+        Map<Long, Answer> selectedAnswerMap = selectedAnswers.stream()
+                .collect(Collectors.toMap(Answer::getId, a -> a));
+
+        List<Answer> correctAnswers = answerRepository.findCorrectAnswersByQuestionIds(questionIds);
+        Map<Long, Answer> correctAnswerMap = correctAnswers.stream()
+                .collect(Collectors.toMap(answer -> answer.getQuestion().getId(), a -> a));
+
+        int correctAnswersCount = 0;
+        List<EvaluationAnswerResultDTO> results = new ArrayList<>();
+        List<UserAnswer> userAnswersToSave = new ArrayList<>();
+
         for (UserAnswerDTO userAnswerDTO : uniqueAnswers.values()) {
-            Question question = questionRepository.findById(userAnswerDTO.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Pregunta no encontrada con ID: " + userAnswerDTO.getQuestionId()));
+            Long questionId = userAnswerDTO.getQuestionId();
+            Long answerId = userAnswerDTO.getAnswerId();
 
-            Answer answer = answerRepository.findById(userAnswerDTO.getAnswerId())
-                    .orElseThrow(() -> new RuntimeException("Respuesta no encontrada con ID: " + userAnswerDTO.getAnswerId()));
+            Question question = questionMap.get(questionId);
+            if (question == null) {
+                throw new RuntimeException("Pregunta no encontrada con ID: " + questionId);
+            }
 
-            boolean isCorrect = answer.getIsCorrect();
+            Answer selectedAnswer = selectedAnswerMap.get(answerId);
+            if (selectedAnswer == null) {
+                throw new RuntimeException("Respuesta no encontrada con ID: " + answerId);
+            }
 
-            // Guardar la respuesta del usuario
+            Answer correctAnswer = correctAnswerMap.get(questionId);
+            if (correctAnswer == null) {
+                throw new RuntimeException("No existe respuesta correcta configurada para la pregunta: " + questionId);
+            }
+
+            boolean isCorrect = selectedAnswer.getId().equals(correctAnswer.getId());
+
+            // Acumular respuesta del usuario
             UserAnswer userAnswer = new UserAnswer();
             userAnswer.setEvaluation(evaluation);
             userAnswer.setQuestion(question);
-            userAnswer.setAnswer(answer);
-            userAnswerRepository.save(userAnswer);
+            userAnswer.setAnswer(selectedAnswer);
+            userAnswersToSave.add(userAnswer);
 
-            // Incrementar el puntaje si la respuesta es correcta
             if (isCorrect) {
-                correctAnswers++;
-                score += 0.33; // Cada respuesta correcta vale 0.33
+                correctAnswersCount++;
             }
+
+            EvaluationAnswerResultDTO result = new EvaluationAnswerResultDTO();
+            result.setQuestionId(questionId);
+            result.setSelectedAnswerId(answerId);
+            result.setCorrectAnswerId(correctAnswer.getId());
+            result.setCorrectAnswerText(correctAnswer.getAnswerText());
+            result.setCorrect(isCorrect);
+            results.add(result);
         }
 
-        // Determinar si pasó o no
-        boolean passed = correctAnswers >= 10; // Debe acertar al menos 10 respuestas
+        // Guardar respuestas del usuario en batch
+        userAnswerRepository.saveAll(userAnswersToSave);
 
-        // Actualizar la evaluación con el puntaje final y estado
-        evaluation.setScore((int) Math.round(score));
+        int totalQuestions = uniqueAnswers.size();
+        // Calcular nota decimal (0–5) con 1 decimal
+        double scoreDecimal = totalQuestions > 0
+                ? Math.round(((correctAnswersCount * 5.0) / totalQuestions) * 10.0) / 10.0
+                : 0.0;
+        // Guardar entero redondeado en la entidad
+        int scoreInt = (int) Math.round(scoreDecimal);
+
+        boolean passed = scoreDecimal >= 3.5; // criterio de aprobación
+
+        evaluation.setScore(scoreInt);
         evaluation.setStatus(passed ? Evaluation.EvaluationStatus.COMPLETED : Evaluation.EvaluationStatus.FAILED);
         evaluation.setUpdatedAt(Timestamp.from(Instant.now()));
         evaluationRepository.save(evaluation);
 
-        // Retornar el resultado como DTO
+        // Armar DTO de respuesta
         EvaluationDTO evaluationDTO = new EvaluationDTO();
         evaluationDTO.setId(evaluation.getId());
         evaluationDTO.setUserId(userId);
-        evaluationDTO.setScore((int) Math.round(score));
+        evaluationDTO.setScore(scoreDecimal);
+        // Si el DTO soporta scoreDecimal/counters, setearlos (de lo contrario, ignora si no existen)
+        try {
+            evaluationDTO.getClass().getMethod("setScoreDecimal", Double.class).invoke(evaluationDTO, scoreDecimal);
+        } catch (Exception ignored) {}
+        try {
+            evaluationDTO.getClass().getMethod("setCorrectAnswers", Integer.class).invoke(evaluationDTO, correctAnswersCount);
+            evaluationDTO.getClass().getMethod("setTotalQuestions", Integer.class).invoke(evaluationDTO, totalQuestions);
+        } catch (Exception ignored) {}
         evaluationDTO.setStatus(passed ? "COMPLETED" : "FAILED");
         evaluationDTO.setCreatedAt(evaluation.getCreatedAt().toString());
         evaluationDTO.setUpdatedAt(evaluation.getUpdatedAt().toString());
+        evaluationDTO.setResults(results);
 
         return evaluationDTO;
     }

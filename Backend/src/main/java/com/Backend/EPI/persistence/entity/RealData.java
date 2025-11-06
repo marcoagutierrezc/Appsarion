@@ -70,6 +70,9 @@ public class RealData {
     @Column(name = "quantity")
     private Integer quantity;
 
+    @Column(name = "observations")
+    private String observations;
+
     // Getters and Setters
 
     public Long getId() {
@@ -222,5 +225,13 @@ public class RealData {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getObservations() {
+        return observations;
+    }
+
+    public void setObservations(String observations) {
+        this.observations = observations;
     }
 }
