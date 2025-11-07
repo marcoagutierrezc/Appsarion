@@ -1,6 +1,6 @@
 package com.Backend.EPI.web.controller;
 
-import com.Backend.EPI.service.GoogleEmailService;
+import com.Backend.EPI.service.EmailService;
 import com.Backend.EPI.service.PasswordResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class EmailController {
 
     @Autowired
-    private GoogleEmailService emailService;
+    private EmailService emailService;
 
     @Autowired
     private PasswordResetService passwordResetService;
@@ -39,8 +39,9 @@ public class EmailController {
             }
 
             String textContent = "¡Hola!\n\n"
-                    + "Este es un email de prueba enviado desde Appsarion usando Google SMTP.\n"
+                    + "Este es un email de prueba enviado desde Appsarion.\n"
                     + "Si recibiste este email, ¡la configuración está funcionando correctamente! ✅\n\n"
+                    + "Proveedor actual: " + emailService.getCurrentProvider() + "\n\n"
                     + "Atentamente,\n"
                     + "Equipo Appsarion";
 
@@ -49,6 +50,7 @@ public class EmailController {
             response.put("success", true);
             response.put("message", "Email enviado exitosamente");
             response.put("to", to);
+            response.put("provider", emailService.getCurrentProvider());
             response.put("timestamp", System.currentTimeMillis());
 
             return ResponseEntity.ok(response);

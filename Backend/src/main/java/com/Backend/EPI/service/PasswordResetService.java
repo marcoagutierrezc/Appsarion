@@ -43,7 +43,7 @@ public class PasswordResetService {
     private UserRepository userRepository;
 
     @Autowired
-    private GoogleEmailService emailService;
+    private EmailService emailService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -337,15 +337,9 @@ public class PasswordResetService {
 
         logger.info("Password successfully reset for user: {}", user.getEmail());
 
-        // Enviar email de confirmación
+        // Enviar email de confirmación con template mejorado
         try {
-            String confirmationMessage = "Tu contraseña ha sido restablecida exitosamente. "
-                    + "Si no fuiste tú, contacta con nosotros inmediatamente.";
-            emailService.sendSimpleEmail(
-                    user.getEmail(),
-                    "Contraseña Restablecida",
-                    confirmationMessage
-            );
+            emailService.sendPasswordResetSuccessEmail(user.getEmail(), user.getName());
         } catch (Exception e) {
             logger.error("Error sending password reset confirmation email: {}", e.getMessage());
             // No lanzar excepción aquí, la contraseña ya fue restablecida

@@ -44,7 +44,7 @@ public class UserToVerifyService {
     private BackblazeService backblazeService;
 
     @Autowired
-    private GoogleEmailService emailService;
+    private EmailService emailService;
 
     @Transactional
     public User validateAndSaveUser(Long userToVerifyId, RoleDataDTO roleDataDTO) {
