@@ -117,5 +117,14 @@ public class FishLotController {
         fishLotService.deleteFishLot(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-}
 
+    @PutMapping("/{id}")
+    public ResponseEntity<FishLot> updateFishLot(@PathVariable Long id, @RequestBody com.Backend.EPI.domain.dto.FishLotDTO fishLotDTO) {
+        try {
+            FishLot updated = fishLotService.updateFishLot(id, fishLotDTO);
+            return new ResponseEntity<>(updated, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+}

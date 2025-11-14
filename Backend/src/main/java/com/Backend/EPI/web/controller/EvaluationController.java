@@ -22,4 +22,34 @@ public class EvaluationController {
                 evaluationService.evaluate(evaluationRequestDTO.getUserId(), evaluationRequestDTO.getUserAnswers())
         );
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EvaluationDTO> getEvaluation(@PathVariable Long id) {
+        try {
+            EvaluationDTO dto = evaluationService.getEvaluationById(id);
+            return ResponseEntity.ok(dto);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EvaluationDTO> updateEvaluation(@PathVariable Long id, @RequestBody EvaluationDTO dto) {
+        try {
+            EvaluationDTO updated = evaluationService.updateEvaluation(id, dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEvaluation(@PathVariable Long id) {
+        try {
+            evaluationService.deleteEvaluation(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

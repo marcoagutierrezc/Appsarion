@@ -60,4 +60,27 @@ public class FishLotService {
     public void deleteFishLot(Long id) {
         fishLotRepository.deleteById(id);
     }
+
+    public FishLot updateFishLot(Long id, com.Backend.EPI.domain.dto.FishLotDTO dto) {
+        Optional<FishLot> opt = fishLotRepository.findById(id);
+        if (opt.isEmpty()) {
+            throw new RuntimeException("FishLot not found with id: " + id);
+        }
+        FishLot fishLot = opt.get();
+
+        if (dto.getLotName() != null) fishLot.setLotName(dto.getLotName());
+        if (dto.getCoordinates() != null) fishLot.setCoordinates(dto.getCoordinates());
+        if (dto.getDepartment() != null) fishLot.setDepartment(dto.getDepartment());
+        if (dto.getMunicipality() != null) fishLot.setMunicipality(dto.getMunicipality());
+        if (dto.getNeighborhood() != null) fishLot.setNeighborhood(dto.getNeighborhood());
+        if (dto.getVereda() != null) fishLot.setVereda(dto.getVereda());
+
+        // Opcional: permitir reasignar relaciones
+        if (dto.getPiscicultorId() != null) fishLot.setPiscicultorId(dto.getPiscicultorId());
+        if (dto.getComercializadorId() != null) fishLot.setComercializadorId(dto.getComercializadorId());
+        if (dto.getEvaluadorId() != null) fishLot.setEvaluadorId(dto.getEvaluadorId());
+        if (dto.getAcademicoId() != null) fishLot.setAcademicoId(dto.getAcademicoId());
+
+        return fishLotRepository.save(fishLot);
+    }
 }

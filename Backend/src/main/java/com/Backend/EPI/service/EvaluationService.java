@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class EvaluationService {
@@ -158,6 +159,89 @@ public class EvaluationService {
         evaluationDTO.setCreatedAt(evaluation.getCreatedAt().toString());
         evaluationDTO.setUpdatedAt(evaluation.getUpdatedAt().toString());
         evaluationDTO.setResults(results);
+
+        return evaluationDTO;
+    }
+
+    public EvaluationDTO updateEvaluation(Long id, EvaluationDTO dto) {
+        Optional<Evaluation> opt = evaluationRepository.findById(id);
+        if (opt.isEmpty()) {
+            throw new RuntimeException("Evaluation not found with id: " + id);
+        }
+        Evaluation evaluation = opt.get();
+
+        // Actualizar score si viene en el DTO
+        if (dto.getScore() != null) {
+            int scoreInt = (int) Math.round(dto.getScore());
+            evaluation.setScore(scoreInt);
+        }
+
+        // Actualizar status si viene
+        if (dto.getStatus() != null) {
+            try {
+                Evaluation.EvaluationStatus status = Evaluation.EvaluationStatus.valueOf(dto.getStatus());
+                evaluation.setStatus(status);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid evaluation status: " + dto.getStatus());
+            }
+        }
+
+        evaluation.setUpdatedAt(Timestamp.from(Instant.now()));
+        evaluation = evaluationRepository.save(evaluation);
+
+        // Mapear a DTO de respuesta
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setId(evaluation.getId());
+        evaluationDTO.setUserId(evaluation.getUserId());
+        // devolver score como decimal con .0
+        evaluationDTO.setScore(evaluation.getScore() != null ? Double.valueOf(evaluation.getScore()) : null);
+        evaluationDTO.setStatus(evaluation.getStatus() != null ? evaluation.getStatus().name() : null);
+        evaluationDTO.setCreatedAt(evaluation.getCreatedAt() != null ? evaluation.getCreatedAt().toString() : null);
+        evaluationDTO.setUpdatedAt(evaluation.getUpdatedAt() != null ? evaluation.getUpdatedAt().toString() : null);
+
+        return evaluationDTO;
+    }
+
+    // Nuevo: eliminar una evaluación (y sus respuestas por cascade)
+    public void deleteEvaluation(Long id) {
+        if (!evaluationRepository.existsById(id)) {
+            throw new RuntimeException("Evaluation not found with id: " + id);
+        }
+        evaluationRepository.deleteById(id);
+    }
+
+    // Nuevo: obtener una evaluación por id
+    public EvaluationDTO getEvaluationById(Long id) {
+        Optional<Evaluation> opt = evaluationRepository.findById(id);
+        if (opt.isEmpty()) {
+            throw new RuntimeException("Evaluation not found with id: " + id);
+        }
+        Evaluation evaluation = opt.get();
+
+        EvaluationDTO evaluationDTO = new EvaluationDTO();
+        evaluationDTO.setId(evaluation.getId());
+        evaluationDTO.setUserId(evaluation.getUserId());
+        evaluationDTO.setScore(evaluation.getScore() != null ? Double.valueOf(evaluation.getScore()) : null);
+        evaluationDTO.setStatus(evaluation.getStatus() != null ? evaluation.getStatus().name() : null);
+        evaluationDTO.setCreatedAt(evaluation.getCreatedAt() != null ? evaluation.getCreatedAt().toString() : null);
+        evaluationDTO.setUpdatedAt(evaluation.getUpdatedAt() != null ? evaluation.getUpdatedAt().toString() : null);
+
+        // Opcional: mapear resultados userAnswers si existen
+        try {
+            if (evaluation.getUserAnswers() != null) {
+                List<EvaluationAnswerResultDTO> results = new ArrayList<>();
+                for (UserAnswer ua : evaluation.getUserAnswers()) {
+                    EvaluationAnswerResultDTO r = new EvaluationAnswerResultDTO();
+                    r.setQuestionId(ua.getQuestion().getId());
+                    r.setSelectedAnswerId(ua.getAnswer().getId());
+                    r.setCorrect(ua.getAnswer().getIsCorrect() != null && ua.getAnswer().getIsCorrect());
+                    r.setCorrectAnswerId(null);
+                    r.setCorrectAnswerText(null);
+                    results.add(r);
+                }
+                evaluationDTO.setResults(results);
+            }
+        } catch (Exception ignored) {}
 
         return evaluationDTO;
     }
