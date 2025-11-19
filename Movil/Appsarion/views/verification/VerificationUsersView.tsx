@@ -27,6 +27,7 @@ import {
   cacheDocument,
   initializeCacheDirectory,
 } from '../../services/documentCacheService';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export interface PendingUser {
   id: number;
@@ -44,6 +45,7 @@ export interface PendingUser {
 }
 
 export function VerificationUsersView() {
+  const { fontScale } = useFontScale();
   const [users, setUsers] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -368,7 +370,7 @@ export function VerificationUsersView() {
   if (users.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No hay usuarios pendientes de verificación</Text>
+        <Text style={[styles.emptyText, { fontSize: 14 * fontScale }]}>No hay usuarios pendientes de verificación</Text>
       </View>
     );
   }
@@ -376,35 +378,35 @@ export function VerificationUsersView() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Usuarios Pendientes de Verificación</Text>
-        <Text style={styles.headerSubtitle}>{users.length} usuario(s) pendiente(s)</Text>
+        <Text style={[styles.headerTitle, { fontSize: 20 * fontScale }]}>Usuarios Pendientes de Verificación</Text>
+        <Text style={[styles.headerSubtitle, { fontSize: 14 * fontScale }]}>{users.length} usuario(s) pendiente(s)</Text>
       </View>
 
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
-          <Text style={styles.tableHeaderText}>Nombre</Text>
-          <Text style={styles.tableHeaderText}>Email</Text>
-          <Text style={styles.tableHeaderText}>Rol</Text>
-          <Text style={styles.tableHeaderText}>Acción</Text>
+          <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Nombre</Text>
+          <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Email</Text>
+          <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Rol</Text>
+          <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Acción</Text>
         </View>
 
         {users.map((user, index) => (
           <View key={user.id} style={styles.tableRow}>
-            <Text style={styles.tableCell} numberOfLines={1}>
+            <Text style={[styles.tableCell, { fontSize: 13 * fontScale }]} numberOfLines={1}>
               {user.name}
             </Text>
-            <Text style={styles.tableCell} numberOfLines={1}>
+            <Text style={[styles.tableCell, { fontSize: 13 * fontScale }]} numberOfLines={1}>
               {user.email}
             </Text>
-            <Text style={styles.tableCell}>{user.role}</Text>
+            <Text style={[styles.tableCell, { fontSize: 13 * fontScale }]}>{user.role}</Text>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => openModal(user, index)}
             >
-              <Text style={styles.actionButtonText}>Ver</Text>
+              <Text style={[styles.actionButtonText, { fontSize: 13 * fontScale }]}>Ver</Text>
             </TouchableOpacity>
           </View>
-        ))}
+        ))}}
       </View>
 
       <Modal
@@ -418,79 +420,79 @@ export function VerificationUsersView() {
             {selectedUser && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{selectedUser.name}</Text>
+                  <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>{selectedUser.name}</Text>
                   <TouchableOpacity
                     onPress={() => setModalVisible(false)}
                     style={styles.closeButton}
                   >
-                    <Text style={styles.closeButtonText}>✕</Text>
+                    <Text style={[styles.closeButtonText, { fontSize: 16 * fontScale }]}>✕</Text>
                   </TouchableOpacity>
                 </View>
 
                 <View style={styles.divider} />
 
                 <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Información Personal</Text>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Información Personal</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>ID:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.id}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>ID:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.id}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Nombre:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.name}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Nombre:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.name}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Tipo de Documento:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.documentType}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Tipo de Documento:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.documentType}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Número de Documento:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.documentNumber}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Número de Documento:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.documentNumber}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Email:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.email}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Email:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.email}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Teléfono:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.phoneNumber}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.divider} />
-
-                <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Información de Rol</Text>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Rol:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.role}</Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Justificación:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.justification}</Text>
-                  </View>
-
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Estado:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.estado}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Teléfono:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.phoneNumber}</Text>
                   </View>
                 </View>
 
                 <View style={styles.divider} />
 
                 <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Documentación</Text>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Información de Rol</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Documento Adjunto:</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Rol:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.role}</Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Justificación:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.justification}</Text>
+                  </View>
+
+                  <View style={styles.infoRow}>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Estado:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.estado}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.divider} />
+
+                <View style={styles.infoSection}>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Documentación</Text>
+
+                  <View style={styles.infoRow}>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Documento Adjunto:</Text>
                     <Text
                       style={[
                         styles.infoValue,
@@ -505,8 +507,8 @@ export function VerificationUsersView() {
 
                   {selectedUser.hasDocument && selectedUser.documentLocation && (
                     <View style={styles.infoRow}>
-                      <Text style={styles.infoLabel}>Ubicación:</Text>
-                      <Text style={styles.infoValue}>{selectedUser.documentLocation}</Text>
+                      <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Ubicación:</Text>
+                      <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.documentLocation}</Text>
                     </View>
                   )}
 
@@ -524,12 +526,12 @@ export function VerificationUsersView() {
                           {documentLoading ? (
                             <>
                               <ActivityIndicator color="#fff" size="small" />
-                              <Text style={styles.documentButtonText}>Cargando...</Text>
+                              <Text style={[styles.documentButtonText, { fontSize: 13 * fontScale }]}>Cargando...</Text>
                             </>
                           ) : (
                             <>
                               <MaterialCommunityIcons name="eye" size={20} color="#fff" style={{ marginRight: 8 }} />
-                              <Text style={styles.documentButtonText}>Ver Documento</Text>
+                              <Text style={[styles.documentButtonText, { fontSize: 13 * fontScale }]}>Ver Documento</Text>
                             </>
                           )}
                         </TouchableOpacity>
@@ -538,7 +540,7 @@ export function VerificationUsersView() {
                       {/* Thumbnail preview */}
                       {currentThumbnail && (
                         <View style={styles.thumbnailContainer}>
-                          <Text style={styles.thumbnailLabel}>Vista Previa:</Text>
+                          <Text style={[styles.thumbnailLabel, { fontSize: 12 * fontScale }]}>Vista Previa:</Text>
                           <TouchableOpacity
                             onPress={handleViewDocument}
                             disabled={documentLoading}
@@ -558,7 +560,7 @@ export function VerificationUsersView() {
 
                   {!selectedUser.hasDocument && (
                     <View style={styles.noDocumentContainer}>
-                      <Text style={styles.noDocumentText}>
+                      <Text style={[styles.noDocumentText, { fontSize: 12 * fontScale }]}>
                         Este usuario no ha adjuntado un documento de soporte.
                       </Text>
                     </View>
@@ -576,7 +578,7 @@ export function VerificationUsersView() {
                     {actionLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.actionBtnText}>✓ Aprobar</Text>
+                      <Text style={[styles.actionBtnText, { fontSize: 13 * fontScale }]}>✓ Aprobar</Text>
                     )}
                   </TouchableOpacity>
 
@@ -588,7 +590,7 @@ export function VerificationUsersView() {
                     {actionLoading ? (
                       <ActivityIndicator color="#fff" />
                     ) : (
-                      <Text style={styles.actionBtnText}>✕ Rechazar</Text>
+                      <Text style={[styles.actionBtnText, { fontSize: 13 * fontScale }]}>✕ Rechazar</Text>
                     )}
                   </TouchableOpacity>
 
@@ -597,7 +599,7 @@ export function VerificationUsersView() {
                     onPress={() => setModalVisible(false)}
                     disabled={actionLoading}
                   >
-                    <Text style={styles.actionBtnText}>Cancelar</Text>
+                    <Text style={[styles.actionBtnText, { fontSize: 13 * fontScale }]}>Cancelar</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -628,7 +630,7 @@ export function VerificationUsersView() {
       >
         <View style={styles.rejectionModalOverlay}>
           <View style={styles.rejectionModalContainer}>
-            <Text style={styles.rejectionModalTitle}>Razón de Rechazo</Text>
+            <Text style={[styles.rejectionModalTitle, { fontSize: 16 * fontScale }]}>Razón de Rechazo</Text>
             <TextInput
               style={styles.rejectionModalInput}
               placeholder="Ingresa la razón del rechazo..."
@@ -648,7 +650,7 @@ export function VerificationUsersView() {
                 }}
                 disabled={actionLoading}
               >
-                <Text style={styles.rejectionModalBtnText}>Cancelar</Text>
+                <Text style={[styles.rejectionModalBtnText, { fontSize: 13 * fontScale }]}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.rejectionModalBtn, styles.rejectionModalBtnConfirm]}
@@ -658,7 +660,7 @@ export function VerificationUsersView() {
                 {actionLoading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.rejectionModalBtnText}>Confirmar</Text>
+                  <Text style={[styles.rejectionModalBtnText, { fontSize: 13 * fontScale }]}>Confirmar</Text>
                 )}
               </TouchableOpacity>
             </View>

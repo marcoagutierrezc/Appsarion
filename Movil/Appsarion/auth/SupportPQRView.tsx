@@ -10,6 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import {BASE_URL} from "../services/connection/connection"
+import { useFontScale } from '../context/FontScaleContext';
 
 const LogoApp = require('../assets/LogoName.png');
 
@@ -22,6 +23,7 @@ interface FormData {
 }
 
 export default function SupportPQRView({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const [formData, setFormData] = useState<FormData>({
     asunto: '',
     nombre: '',
@@ -70,14 +72,14 @@ export default function SupportPQRView({ navigation }: any) {
                   });
                   return (
                     <View style={styles.container}>
-                      <Text style={styles.successMessage}>
+                      <Text style={[styles.successMessage, { fontSize: 16 * fontScale }]}>
                         Solicitud enviada con éxito. Sus opiniones son importantes para nosotros.
                       </Text>
                       <TouchableOpacity
                         style={styles.button}
                         onPress={() => navigation.navigate('Home')}
                       >
-                        <Text style={styles.buttonText}>Volver al inicio</Text>
+                        <Text style={[styles.buttonText, { fontSize: 15 * fontScale }]}>Volver al inicio</Text>
                       </TouchableOpacity>
                     </View>
                   );
@@ -90,7 +92,7 @@ export default function SupportPQRView({ navigation }: any) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={LogoApp} style={styles.logo}/>
-      <Text style={styles.title}>Solicitud de Soporte / PQR</Text>
+      <Text style={[styles.title, { fontSize: 20 * fontScale }]}>Solicitud de Soporte / PQR</Text>
       
       <TextInput
         style={styles.input}
@@ -135,7 +137,7 @@ export default function SupportPQRView({ navigation }: any) {
         style={styles.button}
         onPress={handleSend}
       >
-        <Text style={styles.buttonText}>Enviar Solicitud</Text>
+        <Text style={[styles.buttonText, { fontSize: 16 * fontScale }]}>Enviar Solicitud</Text>
       </TouchableOpacity>
     </ScrollView>
   );

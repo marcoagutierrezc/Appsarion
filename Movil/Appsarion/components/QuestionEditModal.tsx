@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Question, Category } from '../training/types/quiz';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface QuestionEditModalProps {
   visible: boolean;
@@ -20,6 +21,7 @@ export function QuestionEditModal({
   onSave,
   onDelete,
 }: QuestionEditModalProps) {
+  const { fontScale } = useFontScale();
   if (!question) return null;
 
   return (

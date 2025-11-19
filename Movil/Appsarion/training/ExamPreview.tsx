@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NavbarQuiz } from '../components/NavbarQuiz';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 const examInfo = {
   totalQuestions: 15,
@@ -12,6 +13,7 @@ const examInfo = {
 };
 
 export function ExamPreview({navigation}:any) {
+  const { fontScale } = useFontScale();
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -23,51 +25,51 @@ export function ExamPreview({navigation}:any) {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Examen de Piscicultura</Text>
-        <Text style={styles.subtitle}>Prueba tus conocimientos sobre NTC 1443</Text>
+        <Text style={[styles.title, { fontSize: 22 * fontScale }]}>Examen de Piscicultura</Text>
+        <Text style={[styles.subtitle, { fontSize: 14 * fontScale }]}>Prueba tus conocimientos sobre NTC 1443</Text>
 
         {/* Info Card */}
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <View style={styles.infoItemWrapper}>
               <MaterialCommunityIcons name="help-circle" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
-              <Text style={styles.infoNumber}>{examInfo.totalQuestions}</Text>
-              <Text style={styles.infoLabel}>Preguntas</Text>
+              <Text style={[styles.infoNumber, { fontSize: 20 * fontScale }]}>{examInfo.totalQuestions}</Text>
+              <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Preguntas</Text>
             </View>
             <View style={styles.infoItemWrapper}>
               <MaterialCommunityIcons name="clock" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
-              <Text style={styles.infoNumber}>{examInfo.timeLimit}</Text>
-              <Text style={styles.infoLabel}>Minutos</Text>
+              <Text style={[styles.infoNumber, { fontSize: 20 * fontScale }]}>{examInfo.timeLimit}</Text>
+              <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Minutos</Text>
             </View>
             <View style={styles.infoItemWrapper}>
               <MaterialCommunityIcons name="folder-multiple" size={24} color={commonColors.primary} style={{ marginBottom: 8 }} />
-              <Text style={styles.infoNumber}>5</Text>
-              <Text style={styles.infoLabel}>Temas</Text>
+              <Text style={[styles.infoNumber, { fontSize: 20 * fontScale }]}>5</Text>
+              <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Temas</Text>
             </View>
           </View>
 
           <View style={commonStyles.divider} />
 
-          <Text style={styles.categoriesTitle}>Temas a Evaluar:</Text>
+          <Text style={[styles.categoriesTitle, { fontSize: 16 * fontScale }]}>Temas a Evaluar:</Text>
           {examInfo.categories.map((category, index) => (
             <View key={index} style={styles.categoryItem}>
               <MaterialCommunityIcons name="check-circle-outline" size={16} color={commonColors.success} />
-              <Text style={styles.categoryText}>{category}</Text>
+              <Text style={[styles.categoryText, { fontSize: 13 * fontScale }]}>{category}</Text>
             </View>
           ))}
         </View>
 
         {/* Requirements */}
         <View style={styles.requirementsCard}>
-          <Text style={styles.requirementsTitle}>✓ Requisitos</Text>
+          <Text style={[styles.requirementsTitle, { fontSize: 16 * fontScale }]}>✓ Requisitos</Text>
           <View style={styles.requirementItem}>
             <MaterialCommunityIcons name="alert-circle" size={16} color={commonColors.warning} />
-            <Text style={styles.requirementText}>Necesitas calificar al menos el 70% para aprobar</Text>
+            <Text style={[styles.requirementText, { fontSize: 13 * fontScale }]}>Necesitas calificar al menos el 70% para aprobar</Text>
           </View>
         </View>
 
         {/* Ready Text */}
-        <Text style={styles.readyText}>¿Estás listo para comenzar?</Text>
+        <Text style={[styles.readyText, { fontSize: 16 * fontScale }]}>¿Estás listo para comenzar?</Text>
 
         {/* Start Button */}
         <TouchableOpacity 
@@ -75,7 +77,7 @@ export function ExamPreview({navigation}:any) {
           onPress={() => navigation.navigate('Quiz')}
         >
           <MaterialCommunityIcons name="play-circle" size={22} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.startButtonText}>Comenzar Examen</Text>
+          <Text style={[styles.startButtonText, { fontSize: 14 * fontScale }]}>Comenzar Examen</Text>
         </TouchableOpacity>
       </ScrollView>
       <NavbarQuiz navigation={navigation} />

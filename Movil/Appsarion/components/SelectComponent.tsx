@@ -1,5 +1,6 @@
 import React, { memo, useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal, TouchableWithoutFeedback } from 'react-native';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface SelectProps {
   label: string;
@@ -65,6 +66,7 @@ const Select: React.FC<SelectProps> = ({
   colorTouchable = '#ddd',
   colorPlaceholder = '#888',
 }) => {
+  const { fontScale } = useFontScale();
   const [selected, setSelected] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
 

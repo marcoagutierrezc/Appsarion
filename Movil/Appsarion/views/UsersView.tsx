@@ -17,6 +17,7 @@ import { FishLoadingScreen } from '../utils/FishLoadingScreen';
 import { showAlert } from '../utils/alerts';
 import { FullscreenImageViewer } from '../components/FullscreenImageViewer';
 import * as Sharing from 'expo-sharing';
+import { useFontScale } from '../context/FontScaleContext';
 
 export interface User {
   id: number;
@@ -31,6 +32,7 @@ export interface User {
 }
 
 export function UsersView() {
+  const { fontScale } = useFontScale();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -151,22 +153,22 @@ export function UsersView() {
       const data = roleData.piscicultor;
       views.push(
         <View key="piscicultor">
-          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 12 }]}>Datos del Piscicultor</Text>
+          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 14 * fontScale }]}>Datos del Piscicultor</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Departamento:</Text>
-            <Text style={styles.infoValue}>{data.department || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Departamento:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.department || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Municipio:</Text>
-            <Text style={styles.infoValue}>{data.municipality || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Municipio:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.municipality || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Barrio:</Text>
-            <Text style={styles.infoValue}>{data.neighborhood || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Barrio:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.neighborhood || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nombre de la Propiedad:</Text>
-            <Text style={styles.infoValue}>{data.nameProperty || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Nombre de la Propiedad:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.nameProperty || '(sin especificar)'}</Text>
           </View>
         </View>
       );
@@ -176,14 +178,14 @@ export function UsersView() {
       const data = roleData.evaluador;
       views.push(
         <View key="evaluador">
-          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 12 }]}>Datos del Evaluador</Text>
+          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 14 * fontScale }]}>Datos del Evaluador</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Especialidad:</Text>
-            <Text style={styles.infoValue}>{data.specialty || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Especialidad:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.specialty || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Especialización:</Text>
-            <Text style={styles.infoValue}>{data.specialization || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Especialización:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.specialization || '(sin especificar)'}</Text>
           </View>
         </View>
       );
@@ -193,18 +195,18 @@ export function UsersView() {
       const data = roleData.comercializador;
       views.push(
         <View key="comercializador">
-          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 12 }]}>Datos del Comercializador</Text>
+          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 14 * fontScale }]}>Datos del Comercializador</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nombre del Negocio:</Text>
-            <Text style={styles.infoValue}>{data.businessName || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Nombre del Negocio:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.businessName || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Tipo de Negocio:</Text>
-            <Text style={styles.infoValue}>{data.businessType || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Tipo de Negocio:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.businessType || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Dirección:</Text>
-            <Text style={styles.infoValue}>{data.address || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Dirección:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.address || '(sin especificar)'}</Text>
           </View>
         </View>
       );
@@ -214,18 +216,18 @@ export function UsersView() {
       const data = roleData.academico;
       views.push(
         <View key="academico">
-          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 12 }]}>Datos del Académico</Text>
+          <Text style={[styles.sectionTitle, { marginTop: 12, fontSize: 14 * fontScale }]}>Datos del Académico</Text>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Institución:</Text>
-            <Text style={styles.infoValue}>{data.institution || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Institución:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.institution || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Cargo:</Text>
-            <Text style={styles.infoValue}>{data.position || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Cargo:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.position || '(sin especificar)'}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Facultad:</Text>
-            <Text style={styles.infoValue}>{data.faculty || '(sin especificar)'}</Text>
+            <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Facultad:</Text>
+            <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{data.faculty || '(sin especificar)'}</Text>
           </View>
         </View>
       );
@@ -234,8 +236,8 @@ export function UsersView() {
     if (roleData.admin) {
       views.push(
         <View key="admin" style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Tipo:</Text>
-          <Text style={styles.infoValue}>{roleData.admin}</Text>
+          <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Tipo:</Text>
+          <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{roleData.admin}</Text>
         </View>
       );
     }
@@ -404,7 +406,7 @@ export function UsersView() {
   if (users.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No hay usuarios registrados</Text>
+        <Text style={[styles.emptyText, { fontSize: 14 * fontScale }]}>No hay usuarios registrados</Text>
       </View>
     );
   }
@@ -413,13 +415,13 @@ export function UsersView() {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Gestión de Usuarios</Text>
-          <Text style={styles.headerSubtitle}>Administra los usuarios del sistema</Text>
+          <Text style={[styles.headerTitle, { fontSize: 20 * fontScale }]}>Gestión de Usuarios</Text>
+          <Text style={[styles.headerSubtitle, { fontSize: 14 * fontScale }]}>Administra los usuarios del sistema</Text>
         </View>
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>{users.length}</Text>
-            <Text style={styles.statLabel}>Usuarios</Text>
+            <Text style={[styles.statNumber, { fontSize: 24 * fontScale }]}>{users.length}</Text>
+            <Text style={[styles.statLabel, { fontSize: 12 * fontScale }]}>Usuarios</Text>
           </View>
         </View>
       </View>
@@ -436,8 +438,8 @@ export function UsersView() {
       {users.length === 0 ? (
         <View style={styles.emptyState}>
           <MaterialCommunityIcons name="account-multiple" size={64} color="#ccc" />
-          <Text style={styles.emptyStateTitle}>No hay usuarios</Text>
-          <Text style={styles.emptyStateText}>No se encontraron usuarios registrados en el sistema</Text>
+          <Text style={[styles.emptyStateTitle, { fontSize: 16 * fontScale }]}>No hay usuarios</Text>
+          <Text style={[styles.emptyStateText, { fontSize: 13 * fontScale }]}>No se encontraron usuarios registrados en el sistema</Text>
         </View>
       ) : (
         <View style={styles.cardsContainer}>
@@ -450,7 +452,7 @@ export function UsersView() {
             >
               <View style={styles.cardHeader}>
                 <View style={styles.userInitials}>
-                  <Text style={styles.initialsText}>
+                  <Text style={[styles.initialsText, { fontSize: 16 * fontScale }]}>
                     {user.name
                       .split(' ')
                       .slice(0, 2)
@@ -460,8 +462,8 @@ export function UsersView() {
                   </Text>
                 </View>
                 <View style={styles.userInfo}>
-                  <Text style={styles.userName} numberOfLines={1}>{user.name}</Text>
-                  <Text style={styles.userEmail} numberOfLines={1}>{user.email}</Text>
+                  <Text style={[styles.userName, { fontSize: 14 * fontScale }]} numberOfLines={1}>{user.name}</Text>
+                  <Text style={[styles.userEmail, { fontSize: 12 * fontScale }]} numberOfLines={1}>{user.email}</Text>
                 </View>
               </View>
 
@@ -470,7 +472,7 @@ export function UsersView() {
               <View style={styles.cardFooter}>
                 <View style={styles.roleContainer}>
                   <View style={[styles.roleBadge, { backgroundColor: getRoleColor(user.role) }]}>
-                    <Text style={styles.roleBadgeText}>{user.role}</Text>
+                    <Text style={[styles.roleBadgeText, { fontSize: 11 * fontScale }]}>{user.role}</Text>
                   </View>
                 </View>
                 <View style={styles.estadoContainer}>
@@ -511,59 +513,59 @@ export function UsersView() {
             {selectedUser && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{selectedUser.name}</Text>
+                  <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>{selectedUser.name}</Text>
                   <TouchableOpacity
                     onPress={closeModal}
                     style={styles.closeButton}
                   >
-                    <Text style={styles.closeButtonText}>✕</Text>
+                    <Text style={[styles.closeButtonText, { fontSize: 16 * fontScale }]}>✕</Text>
                   </TouchableOpacity>
                 </View>
 
                 <View style={styles.divider} />
 
                 <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Información Personal</Text>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Información Personal</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Nombre:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.name}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Nombre:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.name}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Email:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.email}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Email:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.email}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Tipo de Documento:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.documentType}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Tipo de Documento:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.documentType}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Número de Documento:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.documentNumber}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Número de Documento:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.documentNumber}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Teléfono:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.phoneNumber}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Teléfono:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.phoneNumber}</Text>
                   </View>
                 </View>
 
                 <View style={styles.divider} />
 
                 <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Información de Rol</Text>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Información de Rol</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Rol:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.role}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Rol:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.role}</Text>
                   </View>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Estado:</Text>
-                    <Text style={styles.infoValue}>{selectedUser.estado}</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Estado:</Text>
+                    <Text style={[styles.infoValue, { fontSize: 13 * fontScale }]}>{selectedUser.estado}</Text>
                   </View>
 
                   {loadingDetails ? (
@@ -580,10 +582,10 @@ export function UsersView() {
                 <View style={styles.divider} />
 
                 <View style={styles.infoSection}>
-                  <Text style={styles.sectionTitle}>Documentación</Text>
+                  <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Documentación</Text>
 
                   <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>Documento Adjunto:</Text>
+                    <Text style={[styles.infoLabel, { fontSize: 12 * fontScale }]}>Documento Adjunto:</Text>
                     {checkingDocument ? (
                       <ActivityIndicator size="small" color="#0066cc" />
                     ) : (
@@ -613,12 +615,12 @@ export function UsersView() {
                         {documentLoading ? (
                           <>
                             <ActivityIndicator color="#fff" size="small" />
-                            <Text style={styles.documentButtonText}>Cargando...</Text>
+                            <Text style={[styles.documentButtonText, { fontSize: 13 * fontScale }]}>Cargando...</Text>
                           </>
                         ) : (
                           <>
                             <MaterialCommunityIcons name="eye" size={20} color="#fff" style={{ marginRight: 8 }} />
-                            <Text style={styles.documentButtonText}>Ver Documento</Text>
+                                                        <Text style={[styles.documentButtonText, { fontSize: 13 * fontScale }]}>Ver Documento</Text>
                           </>
                         )}
                       </TouchableOpacity>
@@ -627,7 +629,7 @@ export function UsersView() {
 
                   {!hasDocument && !checkingDocument && (
                     <View style={styles.noDocumentContainer}>
-                      <Text style={styles.noDocumentText}>
+                      <Text style={[styles.noDocumentText, { fontSize: 12 * fontScale }]}>
                         Este usuario no ha adjuntado un documento de soporte.
                       </Text>
                     </View>
@@ -648,11 +650,11 @@ export function UsersView() {
               disabled={documentLoading}
             >
               <MaterialCommunityIcons name="trash-can" size={18} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.deleteButtonText}>Eliminar</Text>
+              <Text style={[styles.deleteButtonText, { fontSize: 13 * fontScale }]}>Eliminar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.closeModalButton} onPress={closeModal}>
-              <Text style={styles.closeModalButtonText}>Cerrar</Text>
+              <Text style={[styles.closeModalButtonText, { fontSize: 13 * fontScale }]}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </View>

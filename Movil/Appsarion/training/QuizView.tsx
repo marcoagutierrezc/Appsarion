@@ -7,8 +7,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { BASE_URL } from '../services/connection/connection';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 export function QuizScreen({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
 
   const numberQuestions = 15;
@@ -126,7 +128,7 @@ export function QuizScreen({ navigation }: any) {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContent}>
           <ActivityIndicator size="large" color={commonColors.primary} />
-          <Text style={styles.loadingText}>Cargando preguntas...</Text>
+          <Text style={[styles.loadingText, { fontSize: 14 * fontScale }]}>Cargando preguntas...</Text>
         </View>
       </SafeAreaView>
     );
@@ -137,7 +139,7 @@ export function QuizScreen({ navigation }: any) {
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContent}>
           <MaterialCommunityIcons name="alert-circle-outline" size={48} color={commonColors.warning} />
-          <Text style={styles.emptyText}>No hay preguntas disponibles.</Text>
+          <Text style={[styles.emptyText, { fontSize: 14 * fontScale }]}>No hay preguntas disponibles.</Text>
         </View>
       </SafeAreaView>
     );
@@ -152,8 +154,8 @@ export function QuizScreen({ navigation }: any) {
         {/* Progress Bar */}
         <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>Pregunta {currentQuestionIndex + 1} de {questions.length}</Text>
-            <Text style={styles.progressPercentage}>{Math.round(progressPercentage)}%</Text>
+            <Text style={[styles.progressLabel, { fontSize: 13 * fontScale }]}>Pregunta {currentQuestionIndex + 1} de {questions.length}</Text>
+            <Text style={[styles.progressPercentage, { fontSize: 14 * fontScale }]}>{Math.round(progressPercentage)}%</Text>
           </View>
           <View style={styles.progressBarBg}>
             <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
@@ -165,12 +167,12 @@ export function QuizScreen({ navigation }: any) {
           <View style={styles.questionIcon}>
             <MaterialCommunityIcons name="help-circle" size={24} color={commonColors.primary} />
           </View>
-          <Text style={styles.questionText}>{currentQuestion?.questionText}</Text>
+          <Text style={[styles.questionText, { fontSize: 16 * fontScale }]}>{currentQuestion?.questionText}</Text>
         </View>
 
         {/* Options */}
         <View style={styles.optionsContainer}>
-          <Text style={styles.optionsLabel}>Selecciona una respuesta:</Text>
+          <Text style={[styles.optionsLabel, { fontSize: 13 * fontScale }]}>Selecciona una respuesta:</Text>
           {currentQuestion?.answers?.map((answer: any, index: number) => {
             const isSelected = selectedAnswer?.answerId === answer.id;
             return (
@@ -192,7 +194,7 @@ export function QuizScreen({ navigation }: any) {
                   )}
                 </View>
                 <Text style={[
-                  styles.optionText,
+                  [styles.optionText, { fontSize: 13 * fontScale }],
                   isSelected && styles.optionTextSelected
                 ]}>
                   {answer.answerText}
@@ -211,7 +213,7 @@ export function QuizScreen({ navigation }: any) {
           disabled={currentQuestionIndex === 0 || isSubmitting}
         >
           <MaterialCommunityIcons name="arrow-left" size={20} color={currentQuestionIndex === 0 ? commonColors.border : commonColors.primary} />
-          <Text style={styles.secondaryButtonText}>Anterior</Text>
+          <Text style={[styles.secondaryButtonText, { fontSize: 13 * fontScale }]}>Anterior</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

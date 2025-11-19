@@ -3,6 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 // Types kept loose to avoid tight coupling with backend shape
 interface AnswerItem { id: number; answerText?: string; text?: string; isCorrect?: boolean }
@@ -11,6 +12,7 @@ interface UserAnswer { questionId: number; answerId: number }
 interface BackendResult { questionId: number; selectedAnswerId: number; correctAnswerId: number; correctAnswerText?: string; correct?: boolean }
 
 export default function QuizSummary({ route, navigation }: any) {
+  const { fontScale } = useFontScale();
   const params = route?.params ?? {};
   const questions: QuestionItem[] = params?.questions ?? [];
   const answers: UserAnswer[] = params?.answers ?? [];
@@ -97,13 +99,13 @@ export default function QuizSummary({ route, navigation }: any) {
         <View style={styles.iconBadge}>
           <MaterialCommunityIcons name={passed ? 'check-decagram' : 'alert-decagram'} size={28} color={passed ? commonColors.success : commonColors.danger} />
         </View>
-        <Text style={styles.title}>{passed ? '¡Examen aprobado!' : 'Examen finalizado'}</Text>
+        <Text style={[styles.title, { fontSize: 20 * fontScale }]}>{passed ? '¡Examen aprobado!' : 'Examen finalizado'}</Text>
         {/* Puntaje 0–5.0 con énfasis */}
         <View style={styles.scoreWrap}>
-          <Text style={[styles.scoreBig, passed ? styles.scoreBigPassed : styles.scoreBigFailed]}>{displayScoreFive.toFixed(2)}</Text>
-          <Text style={[styles.scoreSymbol, passed ? styles.scoreBigPassed : styles.scoreBigFailed]}>/5.0</Text>
+          <Text style={[styles.scoreBig, passed ? styles.scoreBigPassed : styles.scoreBigFailed, { fontSize: 44 * fontScale }]}>{displayScoreFive.toFixed(2)}</Text>
+          <Text style={[styles.scoreSymbol, passed ? styles.scoreBigPassed : styles.scoreBigFailed, { fontSize: 20 * fontScale }]}>/5.0</Text>
         </View>
-        <Text style={styles.subtitle}>{correct}/{total} correctas</Text>
+        <Text style={[styles.subtitle, { fontSize: 13 * fontScale }]}>{correct}/{total} correctas</Text>
 
         {/* Barra de progreso (usa % interno, pero mostramos 0–5 arriba) */}
         <View style={styles.progressTrack}>
@@ -112,7 +114,7 @@ export default function QuizSummary({ route, navigation }: any) {
 
         <View style={[styles.statusPillBase, passed ? styles.statusPillPassed : styles.statusPillFailed]}>
           <MaterialCommunityIcons name={passed ? 'thumb-up-outline' : 'thumb-down-outline'} size={16} color={passed ? '#0f5132' : '#842029'} />
-          <Text style={passed ? styles.statusTextPassed : styles.statusTextFailed}>{passed ? 'Aprobado' : 'No aprobado'}</Text>
+          <Text style={[passed ? styles.statusTextPassed : styles.statusTextFailed, { fontSize: 13 * fontScale }]}>{passed ? 'Aprobado' : 'No aprobado'}</Text>
         </View>
       </View>
 
@@ -125,11 +127,11 @@ export default function QuizSummary({ route, navigation }: any) {
           <View style={[styles.detailCard, item.isCorrect ? styles.detailCorrect : styles.detailIncorrect]}>
             <View style={styles.detailHeader}>
               <View style={[styles.resultDot, { backgroundColor: item.isCorrect ? commonColors.success : commonColors.danger }]} />
-              <Text style={styles.questionText}>{index + 1}. {item.question}</Text>
+              <Text style={[styles.questionText, { fontSize: 13 * fontScale }]}>{index + 1}. {item.question}</Text>
             </View>
-            <Text style={styles.answerLine}>Tu respuesta: <Text style={styles.strong}>{item.userAnswer}</Text></Text>
+            <Text style={[styles.answerLine, { fontSize: 12 * fontScale }]}>Tu respuesta: <Text style={styles.strong}>{item.userAnswer}</Text></Text>
             {!item.isCorrect && (
-              <Text style={styles.answerLine}>Correcta: <Text style={styles.strong}>{item.correctAnswer}</Text></Text>
+              <Text style={[styles.answerLine, { fontSize: 12 * fontScale }]}>Correcta: <Text style={styles.strong}>{item.correctAnswer}</Text></Text>
             )}
           </View>
         )}
@@ -138,10 +140,10 @@ export default function QuizSummary({ route, navigation }: any) {
       {/* Actions */}
       <View style={styles.actions}>
         <TouchableOpacity style={[commonStyles.buttonSecondary, styles.actionHalf]} onPress={() => navigation.navigate('Prueba')}>
-          <Text style={commonStyles.buttonSecondaryText}>Repetir examen</Text>
+          <Text style={[commonStyles.buttonSecondaryText, { fontSize: 13 * fontScale }]}>Repetir examen</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[passed ? commonStyles.buttonSuccess : commonStyles.buttonPrimary, styles.actionHalf]} onPress={() => navigation.navigate('TrainingHome')}>
-          <Text style={passed ? commonStyles.buttonSuccessText : commonStyles.buttonPrimaryText}>Volver al inicio</Text>
+          <Text style={[passed ? commonStyles.buttonSuccessText : commonStyles.buttonPrimaryText, { fontSize: 13 * fontScale }]}>Volver al inicio</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

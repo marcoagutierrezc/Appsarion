@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFontScale } from '../../context/FontScaleContext';
 
 const LogoApp = require('../../assets/LogoName.png');
 const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL || 'soporte@appsarion.com';
 
 export function RegisterConfirmationView({ navigation }: any) {
+  const { fontScale } = useFontScale();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Success Icon */}
@@ -19,16 +21,16 @@ export function RegisterConfirmationView({ navigation }: any) {
       <Image source={LogoApp} style={styles.logo} />
 
       {/* Main Message */}
-      <Text style={styles.mainTitle}>¡Registro Exitoso!</Text>
-      <Text style={styles.subtitle}>Tu cuenta ha sido creada</Text>
+      <Text style={[styles.mainTitle, { fontSize: 22 * fontScale }]}>¡Registro Exitoso!</Text>
+      <Text style={[styles.subtitle, { fontSize: 14 * fontScale }]}>Tu cuenta ha sido creada</Text>
 
       {/* Info Box */}
       <View style={styles.infoBox}>
         <View style={styles.infoItemRow}>
           <MaterialCommunityIcons name="shield-check-outline" size={24} color="#0066cc" style={styles.infoIcon} />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Moderación pendiente</Text>
-            <Text style={styles.infoDescription}>Nuestro equipo revisará tu información en breve</Text>
+            <Text style={[styles.infoTitle, { fontSize: 14 * fontScale }]}>Moderación pendiente</Text>
+            <Text style={[styles.infoDescription, { fontSize: 12 * fontScale }]}>Nuestro equipo revisará tu información en breve</Text>
           </View>
         </View>
 
@@ -37,8 +39,8 @@ export function RegisterConfirmationView({ navigation }: any) {
         <View style={styles.infoItemRow}>
           <MaterialCommunityIcons name="clock-outline" size={24} color="#0066cc" style={styles.infoIcon} />
           <View style={styles.infoContent}>
-            <Text style={styles.infoTitle}>Tiempo estimado</Text>
-            <Text style={styles.infoDescription}>Puedes recibir confirmación en 24-48 horas</Text>
+            <Text style={[styles.infoTitle, { fontSize: 14 * fontScale }]}>Tiempo estimado</Text>
+            <Text style={[styles.infoDescription, { fontSize: 12 * fontScale }]}>Puedes recibir confirmación en 24-48 horas</Text>
           </View>
         </View>
       </View>
@@ -71,14 +73,14 @@ export function RegisterConfirmationView({ navigation }: any) {
         style={styles.button}
         onPress={() => navigation.popToTop()}
       >
-        <Text style={styles.buttonText}>Ir a Inicio de Sesión</Text>
+        <Text style={[styles.buttonText, { fontSize: 15 * fontScale }]}>Ir a Inicio de Sesion</Text>
         <MaterialCommunityIcons name="arrow-right" size={20} color="#fff" style={{ marginLeft: 8 }} />
       </TouchableOpacity>
 
       {/* Support Link */}
-      <Text style={styles.supportText}>
-        ¿Problemas? Contáctanos en{' '}
-        <Text style={styles.supportLink}>{SUPPORT_EMAIL}</Text>
+      <Text style={[styles.supportText, { fontSize: 12 * fontScale }]}>
+        Problemas? Contactanos en{' '}
+        <Text style={[styles.supportLink, { fontSize: 12 * fontScale }]}>{SUPPORT_EMAIL}</Text>
       </Text>
     </ScrollView>
   );

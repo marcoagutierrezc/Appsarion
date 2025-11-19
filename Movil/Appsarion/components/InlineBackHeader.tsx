@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { commonColors } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface Props {
   onPress?: () => void;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export const InlineBackHeader: React.FC<Props> = ({ onPress, style }) => {
+  const { fontScale } = useFontScale();
   const navigation = useNavigation<any>();
   const handlePress = onPress ?? (() => navigation.goBack());
   return (

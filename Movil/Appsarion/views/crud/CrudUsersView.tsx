@@ -5,6 +5,7 @@ import {FishLoadingScreen} from '../../utils/FishLoadingScreen';
 import { BASE_URL } from '../../services/connection/connection';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export interface User {
   id: number;
@@ -69,6 +70,7 @@ const roleEndpoints: Record<string, string> = {
 };
 
 export function CrudUsersView() {
+  const { fontScale } = useFontScale();
   const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
   const [users, setUsers] = useState<User[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -188,17 +190,17 @@ export function CrudUsersView() {
       {/* // Aquí va el código para mostrar la tabla de usuarios */}
       <View style={styles.tableContainer}>
       <View style={styles.tableHeader}>
-        <Text style={styles.tableHeaderText}>Nombre</Text>
-        <Text style={styles.tableHeaderText}>Documento</Text>
-        <Text style={styles.tableHeaderTextSmall}>Acciones</Text>
+        <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Nombre</Text>
+        <Text style={[styles.tableHeaderText, { fontSize: 14 * fontScale }]}>Documento</Text>
+        <Text style={[styles.tableHeaderTextSmall, { fontSize: 13 * fontScale }]}>Acciones</Text>
       </View>
       {users.map((user, index) => (
         <View key={user.id} style={styles.tableRow}>
-          <Text style={styles.tableCell}>{user.name}</Text>
-          <Text style={styles.tableCell}>{`${user.documentType}: ${user.documentNumber}`}</Text>
+          <Text style={[styles.tableCell, { fontSize: 13 * fontScale }]}>{user.name}</Text>
+          <Text style={[styles.tableCell, { fontSize: 13 * fontScale }]}>{`${user.documentType}: ${user.documentNumber}`}</Text>
           <View style={styles.tableCellSmall}>
             <TouchableOpacity style={[styles.button]} onPress={() => openModal(user, index)}>
-              <Text style={styles.buttonText}>+</Text>
+              <Text style={[styles.buttonText, { fontSize: 20 * fontScale }]}>+</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -214,8 +216,8 @@ export function CrudUsersView() {
           <View style={styles.modalContent}>
             {selectedUser && (
               <>
-                <Text style={styles.modalTitle}>{selectedUser.name}</Text>
-                <Text>{`Id: ${selectedUser.id}`}</Text>
+                <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>{selectedUser.name}</Text>
+                <Text style={[{fontSize: 13 * fontScale }]}>{`Id: ${selectedUser.id}`}</Text>
                 <Text>{`Rol: ${selectedUser.role}`}</Text>
                 <Text>{`${selectedUser.documentType}: ${selectedUser.documentNumber}`}</Text>
                 <Text>{`Teléfono: ${selectedUser.phoneNumber}`}</Text>

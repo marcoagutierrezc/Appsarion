@@ -15,10 +15,12 @@ import Select from '../../components/SelectComponent';
 import {colorOptions, eyeOptions, furOptions, gillOptions, meatOptions, smellOptions, textureOptions} from '../../data/optionsNTC1443';
 import {BASE_URL} from '../../services/connection/connection';
 import { commonColors, commonStyles } from '../../styles/commonStyles';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export function EvaluationDataView({route, navigation}:any){
   const userRole = useSelector((state: RootState) => state.auth.user?.role?.toLowerCase() ?? '');
   const idRole = useSelector((state: RootState) => state.auth.user?.idRole);
+  const { fontScale } = useFontScale();
   const params = route?.params ?? {};
   const {
     fishLotId = null,
@@ -125,7 +127,7 @@ export function EvaluationDataView({route, navigation}:any){
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
-        <Text style={styles.title}>Evaluación organoléptica</Text>
+        <Text style={[styles.title, { fontSize: 20 * fontScale }]}>Evaluación organolepta</Text>
         <View>
           <Select
             label="Olor" 
@@ -191,7 +193,7 @@ export function EvaluationDataView({route, navigation}:any){
             onValueChange={(itemValue: string) => setGills(Number(itemValue))}
           />
         </View>
-        <Text style={styles.inputLabel}>Observaciones (opcional)</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Observaciones (opcional)</Text>
         <TextInput
           style={styles.observations}
           value={observations}

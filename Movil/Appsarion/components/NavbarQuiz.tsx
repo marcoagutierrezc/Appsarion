@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootState } from '../store';
 import { useSelector } from "react-redux";
 import { commonColors } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface NavRoute {
   name: string;
@@ -12,6 +13,7 @@ interface NavRoute {
 }
 
 export const NavbarQuiz = ({ navigation }: any) => {
+  const { fontScale } = useFontScale();
   const rawRole = useSelector((state: RootState) => state.auth.user?.role);
   const role = rawRole ? rawRole.toLowerCase() : '';
 
@@ -36,7 +38,7 @@ export const NavbarQuiz = ({ navigation }: any) => {
           <View style={styles.navIconContainer}>
             <MaterialCommunityIcons name={route.icon} size={24} color={commonColors.primary} />
           </View>
-          <Text style={styles.navText}>{route.label}</Text>
+          <Text style={[styles.navText, { fontSize: 12 * fontScale }]}>{route.label}</Text>
         </TouchableOpacity>
       ))}
     </View>

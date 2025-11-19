@@ -6,20 +6,25 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { NavbarQuiz } from '../components/NavbarQuiz';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
-const CategoryBox = ({ title, icon, onPress }:any) => (
-  <TouchableOpacity style={styles.categoryBox} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.categoryContent}>
-      <View style={styles.categoryIconContainer}>
-        <MaterialCommunityIcons name={icon} size={28} color={commonColors.primary} />
+const CategoryBox = ({ title, icon, onPress }:any) => {
+  const { fontScale } = useFontScale();
+  return (
+    <TouchableOpacity style={styles.categoryBox} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.categoryContent}>
+        <View style={styles.categoryIconContainer}>
+          <MaterialCommunityIcons name={icon} size={28} color={commonColors.primary} />
+        </View>
+        <Text style={[styles.categoryTitle, { fontSize: 14 * fontScale }]}>{title}</Text>
       </View>
-      <Text style={styles.categoryTitle}>{title}</Text>
-    </View>
-    <MaterialCommunityIcons name="chevron-right" size={24} color={commonColors.primary} />
-  </TouchableOpacity>
-);
+      <MaterialCommunityIcons name="chevron-right" size={24} color={commonColors.primary} />
+    </TouchableOpacity>
+  );
+};
 
 export function TrainingView({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const userName = useSelector((state: RootState) => state.auth.user?.name) ?? '';
 
   const categories = [
@@ -36,12 +41,12 @@ export function TrainingView({ navigation }: any) {
         <View style={styles.greetingBox}>
           <MaterialCommunityIcons name="hand-wave" size={24} color={commonColors.primary} style={{ marginRight: 8 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.greeting}>¡Hola {userName}!</Text>
-            <Text style={styles.welcomeText}>Continúa aprendiendo sobre piscicultura</Text>
+            <Text style={[styles.greeting, { fontSize: 16 * fontScale }]}>¡Hola {userName}!</Text>
+            <Text style={[styles.welcomeText, { fontSize: 13 * fontScale }]}>Continúa aprendiendo sobre piscicultura</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Categorías de Aprendizaje</Text>
+        <Text style={[styles.sectionTitle, { fontSize: 18 * fontScale }]}>Categorías de Aprendizaje</Text>
         
         <View style={styles.categoriesContainer}>
           {categories.map((category, index) => (

@@ -26,6 +26,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ErrorBoundary from './utils/ErrorBoundary';
 import { Alert, LogBox } from 'react-native';
+import { FontScaleProvider } from './context/FontScaleContext';
 
 export default function App() {
   // Global error capture to avoid full crashes and surface logs
@@ -70,9 +71,11 @@ export default function App() {
     <ReduxProvider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <ErrorBoundary>
-            <Navigation />
-          </ErrorBoundary>
+          <FontScaleProvider>
+            <ErrorBoundary>
+              <Navigation />
+            </ErrorBoundary>
+          </FontScaleProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </ReduxProvider>

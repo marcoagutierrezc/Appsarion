@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export function RegisterDataView({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const [name, setName] = useState('');
   const [documentType, setDocumentType] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
@@ -98,8 +100,8 @@ export function RegisterDataView({ navigation }: any) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Crear Cuenta</Text>
-          <Text style={styles.headerSubtitle}>Paso 1 de 2: Datos Personales</Text>
+          <Text style={[styles.headerTitle, { fontSize: 24 * fontScale }]}>Crear Cuenta</Text>
+          <Text style={[styles.headerSubtitle, { fontSize: 14 * fontScale }]}>Paso 1 de 2: Datos Personales</Text>
         </View>
         <View style={styles.progressBar}>
           <View style={[styles.progressSegment, { backgroundColor: '#0066cc' }]} />
@@ -111,7 +113,7 @@ export function RegisterDataView({ navigation }: any) {
       <View style={styles.formSection}>
         {/* Name */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Nombre Completo *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Nombre Completo *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="account-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -126,7 +128,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Document Type */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Tipo de Documento *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Tipo de Documento *</Text>
           <View style={styles.pickerWrapper}>
             <MaterialCommunityIcons name="card-account-details-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <Picker
@@ -143,7 +145,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Document Number */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Número de Documento *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Número de Documento *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="numeric" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -167,7 +169,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Repeat Document Number */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Repetir Número *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Repetir Número *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="numeric" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -191,7 +193,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Phone */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Número de Teléfono *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Número de Teléfono *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="phone-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -215,7 +217,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Email */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Correo Electrónico *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Correo Electrónico *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="email-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -239,7 +241,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Password */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Contraseña *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Contraseña *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="lock-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -263,7 +265,7 @@ export function RegisterDataView({ navigation }: any) {
 
         {/* Repeat Password */}
         <View style={styles.inputGroup}>
-          <Text style={styles.inputLabel}>Repetir Contraseña *</Text>
+          <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Repetir Contraseña *</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="lock-outline" size={20} color="#0066cc" style={styles.inputIcon} />
             <TextInput
@@ -300,13 +302,13 @@ export function RegisterDataView({ navigation }: any) {
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('Login')}
         >
-          <Text style={styles.secondaryButtonText}>Cancelar</Text>
+          <Text style={[styles.secondaryButtonText, { fontSize: 15 * fontScale }]}>Cancelar</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.primaryButton}
           onPress={handleSubmit}
         >
-          <Text style={styles.primaryButtonText}>Siguiente</Text>
+          <Text style={[styles.primaryButtonText, { fontSize: 16 * fontScale }]}>Siguiente</Text>
           <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" style={{ marginLeft: 8 }} />
         </TouchableOpacity>
       </View>

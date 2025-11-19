@@ -19,10 +19,12 @@ import { obtenerCiudadesPorDepartamento, obtenerListaDepartamentos } from '../..
 import data from '../../data/colombia.json';
 import { useFontScale } from '../../context/FontScaleContext';
 
-export function RegisterLotDataView({ route, navigation }: any) {
+export function EditFishLotView({ route, navigation }: any) {
   const { fontScale } = useFontScale();
+  const { fishLotId } = route.params || {};
   const idRole = useSelector((state: RootState) => state.auth.user?.idRole);
   const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
+  const userId = useSelector((state: RootState) => state.auth.user?.idRole);
 
   const [citiesFilter, setCitiesFilter] = useState<string[]>([]);
   const [listDepartamento, setListDepartamento] = useState<string[]>([]);
@@ -33,10 +35,13 @@ export function RegisterLotDataView({ route, navigation }: any) {
   const [barrio, setBarrio] = useState('');
   const [vereda, setVereda] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  // Removed focus chaining refs to avoid focusing non-editable inputs and reduce IME edge cases
+  const [loading, setLoading] = useState(true);
 
   const mountedRef = useRef(true);
+
+  // Opciones para Pickers
+  const departamentoOptions = useMemo(() => listDepartamento, [listDepartamento]);
+  const municipioOptions = useMemo(() => citiesFilter, [citiesFilter]);
 
   useEffect(() => {
     setListDepartamento(obtenerListaDepartamentos(data));
@@ -47,13 +52,43 @@ export function RegisterLotDataView({ route, navigation }: any) {
 
   useEffect(() => {
     setCitiesFilter(obtenerCiudadesPorDepartamento(selectedDepartamento, data));
-    // Reset municipio when departamento changes to avoid inconsistent state
     setSelectedMunicipio('');
   }, [selectedDepartamento]);
 
-  // Opciones para Pickers (se derivan de los estados existentes)
-  const departamentoOptions = useMemo(() => listDepartamento, [listDepartamento]);
-  const municipioOptions = useMemo(() => citiesFilter, [citiesFilter]);
+  // Cargar datos del lote
+  useEffect(() => {
+    const loadFishLot = async () => {
+      try {
+        if (!fishLotId) {
+          Alert.alert('Error', 'ID del lote no proporcionado.');
+          navigation.goBack();
+          return;
+        }
+
+        const response = await fetch(`${BASE_URL}/fish_lot/${fishLotId}`);
+        if (!response.ok) throw new Error('No se pudo cargar el lote.');
+
+        const fishLot = await response.json();
+        if (mountedRef.current) {
+          setLote(fishLot.lotName || '');
+          setCoordenadas(fishLot.coordinates || '');
+          setSelectedDepartamento(fishLot.department || '');
+          setSelectedMunicipio(fishLot.municipality || '');
+          setBarrio(fishLot.neighborhood || '');
+          setVereda(fishLot.vereda || '');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error al cargar el lote:', error);
+        if (mountedRef.current) {
+          Alert.alert('Error', 'No se pudo cargar los datos del lote.');
+          setLoading(false);
+        }
+      }
+    };
+
+    loadFishLot();
+  }, [fishLotId]);
 
   const obtenerCoordenadas = async () => {
     try {
@@ -87,15 +122,12 @@ export function RegisterLotDataView({ route, navigation }: any) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
       return;
     }
-    const rol = normalizeRole(userRole);
-    if (!rol || !idRole) {
-      Alert.alert('Sesión requerida', 'No encontramos la información del usuario. Vuelve a iniciar sesión.');
-      return;
-    }
+
     try {
       if (submitting) return;
       setSubmitting(true);
       Keyboard.dismiss();
+
       const LotData = {
         lotName: lote.trim(),
         coordinates: coordenadas.trim(),
@@ -105,24 +137,24 @@ export function RegisterLotDataView({ route, navigation }: any) {
         vereda: vereda.trim(),
       };
 
-      const response = await fetch(`${BASE_URL}/fish_lot/${rol}/${idRole}`, {
-        method: 'POST',
+      const response = await fetch(`${BASE_URL}/fish_lot/${fishLotId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(LotData),
       });
 
       if (!response.ok) {
-        const msg = await response.text().catch(() => 'Error en el servicio de registro de Lotes');
-        throw new Error(msg || 'Error en el servicio de registro de Lotes');
+        const msg = await response.text().catch(() => 'Error en el servicio de actualización');
+        throw new Error(msg || 'Error en el servicio de actualización de lotes');
       }
-      // Defer navigation to the next frame to avoid setState-after-unmount and navigation race conditions
+
       await new Promise((r) => setTimeout(r, 0));
       if (navigation?.navigate) {
         navigation.navigate('Drawer', { screen: 'Lotes' });
       }
     } catch (error) {
-      console.error('Error en el registro del Lote:', error);
-      Alert.alert('Error', (error as any)?.message ?? 'No se pudo registrar el lote.');
+      console.error('Error en la actualización del Lote:', error);
+      Alert.alert('Error', (error as any)?.message ?? 'No se pudo actualizar el lote.');
     } finally {
       if (mountedRef.current) {
         setSubmitting(false);
@@ -130,13 +162,21 @@ export function RegisterLotDataView({ route, navigation }: any) {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={[styles.loadingText, { fontSize: 14 * fontScale }]}>Cargando...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
-      {/* Header estilo registro de usuarios */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { fontSize: 20 * fontScale }]}>Registrar Lote</Text>
-          <Text style={[styles.headerSubtitle, { fontSize: 14 * fontScale }]}>Datos del lote</Text>
+          <Text style={[styles.headerTitle, { fontSize: 20 * fontScale }]}>Editar Lote</Text>
+          <Text style={[styles.headerSubtitle, { fontSize: 14 * fontScale }]}>Actualizar datos del lote</Text>
         </View>
         <View style={styles.progressBar}>
           <View style={[styles.progressSegment, { backgroundColor: '#0066cc' }]} />
@@ -178,7 +218,7 @@ export function RegisterLotDataView({ route, navigation }: any) {
             />
           </View>
           <TouchableOpacity style={[styles.secondaryButtonInline, { marginTop: 8 }]} onPress={obtenerCoordenadas}>
-            <Text style={[styles.secondaryButtonText, { fontSize: 13 * fontScale }]}>Obtener Coordenadas</Text>
+            <Text style={[styles.secondaryButtonText, { fontSize: 13 * fontScale }]}>Actualizar Coordenadas</Text>
           </TouchableOpacity>
         </View>
 
@@ -261,26 +301,12 @@ export function RegisterLotDataView({ route, navigation }: any) {
           <Text style={[styles.secondaryButtonText, { fontSize: 13 * fontScale }]}>Cancelar</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.primaryButton, submitting && { opacity: 0.6 }]} onPress={handleSubmit} disabled={submitting}>
-          <Text style={[styles.primaryButtonText, { fontSize: 14 * fontScale }]}>{submitting ? 'Enviando...' : 'Finalizar'}</Text>
+          <Text style={[styles.primaryButtonText, { fontSize: 14 * fontScale }]}>{submitting ? 'Actualizando...' : 'Guardar'}</Text>
           {!submitting && <MaterialCommunityIcons name="check" size={18} color="#fff" style={{ marginLeft: 8 }} />}
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
-}
-
-function normalizeRole(role: string): string {
-  if (!role) return '';
-  const base = role
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-  if (base.includes('admin')) return 'admin';
-  if (base.includes('piscicultor')) return 'piscicultor';
-  if (base.includes('comercializador')) return 'comercializador';
-  if (base.includes('evaluador') || base.includes('agente')) return 'evaluador';
-  if (base.includes('academico')) return 'academico';
-  return base;
 }
 
 const styles = StyleSheet.create({
@@ -291,6 +317,16 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#1a1a1a',
   },
   /* Header */
   header: {
@@ -433,4 +469,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterLotDataView;
+export default EditFishLotView;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal,} from 'react-native';
+import { useFontScale } from '../context/FontScaleContext';
 
 export interface User {
   id: number;
@@ -41,6 +42,7 @@ export type DataRoleAcademico = {
 };
 
 const UserTable = ({ }) => {
+  const { fontScale } = useFontScale();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 

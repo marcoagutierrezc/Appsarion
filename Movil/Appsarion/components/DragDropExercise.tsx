@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { View, Text, Animated, PanResponder, GestureResponderEvent, LayoutChangeEvent, StyleSheet } from "react-native";
+import { useFontScale } from '../context/FontScaleContext';
 
 interface Word {
   id: string;
@@ -15,6 +16,7 @@ interface DropZone {
 }
 
 const DragDropExercise = () => {
+  const { fontScale } = useFontScale();
   const words: Word[] = [
     { id: "1", text: "Hello", isPlaced: false },
     { id: "2", text: "World", isPlaced: false },

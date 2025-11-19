@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { PinchGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface FullscreenImageViewerProps {
   visible: boolean;

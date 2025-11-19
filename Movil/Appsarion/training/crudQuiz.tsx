@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {NavbarQuiz} from '../components/NavbarQuiz';
 import { BASE_URL } from '../services/connection/connection';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface Category{
   id: string;
@@ -38,6 +39,7 @@ interface Answer {
 }
 
 export default function QuizManagement({navigation}: any) {
+  const { fontScale } = useFontScale();
   //Categorias
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -140,7 +142,7 @@ export default function QuizManagement({navigation}: any) {
       {questions.length === 0 && !loading && (
         <View style={styles.emptyState}>
           <MaterialCommunityIcons name="file-document-outline" size={48} color={commonColors.textSecondary} />
-          <Text style={styles.emptyText}>No hay preguntas registradas</Text>
+          <Text style={[styles.emptyText, { fontSize: 14 * fontScale }]}>No hay preguntas registradas</Text>
         </View>
       )}
 
@@ -155,8 +157,8 @@ export default function QuizManagement({navigation}: any) {
             <View style={styles.questionTitleContainer}>
               <MaterialCommunityIcons name={expandedQuestion === question.id ? 'chevron-down' : 'chevron-right'} size={24} color={commonColors.primary} />
               <View>
-                <Text style={styles.questionTitle}>{`Pregunta ${question.id}`}</Text>
-                <Text style={styles.categoryBadge}>{question.categoryName}</Text>
+                <Text style={[styles.questionTitle, { fontSize: 14 * fontScale }]}>{`Pregunta ${question.id}`}</Text>
+                <Text style={[styles.categoryBadge, { fontSize: 12 * fontScale }]}>{question.categoryName}</Text>
               </View>
             </View>
             <TouchableOpacity
@@ -169,7 +171,7 @@ export default function QuizManagement({navigation}: any) {
 
           {expandedQuestion === question.id && (
             <View style={styles.answersGrid}>
-              <Text style={styles.questionContent}>{question.questionText}</Text>
+              <Text style={[styles.questionContent, { fontSize: 13 * fontScale }]}>{question.questionText}</Text>
               {question.answers?.length > 0 ? (
                 <View style={styles.answersContainer}>
                   {question.answers.map((answer, index) => (
@@ -181,7 +183,7 @@ export default function QuizManagement({navigation}: any) {
                       ]}
                     >
                       <View style={styles.answerRow}>
-                        <Text style={styles.answerIndex}>{String.fromCharCode(65 + index)}</Text>
+                        <Text style={[styles.answerIndex, { fontSize: 12 * fontScale }]}>{String.fromCharCode(65 + index)}</Text>
                         <Text style={[styles.answerText, answer.isCorrect && styles.correctAnswerText]}>
                           {answer.answerText}
                         </Text>
@@ -191,7 +193,7 @@ export default function QuizManagement({navigation}: any) {
                   ))}
                 </View>
               ) : (
-                <Text style={styles.noAnswersText}>No hay respuestas disponibles</Text>
+                <Text style={[styles.noAnswersText, { fontSize: 13 * fontScale }]}>No hay respuestas disponibles</Text>
               )}
             </View>
           )}
@@ -210,7 +212,7 @@ export default function QuizManagement({navigation}: any) {
       <SafeAreaView style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Editar Pregunta</Text>
+            <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>Editar Pregunta</Text>
             <TouchableOpacity 
               onPress={() => setEditModalVisible(false)}
               style={styles.closeButton}
@@ -221,7 +223,7 @@ export default function QuizManagement({navigation}: any) {
 
           {selectedQuestion && (
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.modalLabel}>Categoría:</Text>
+              <Text style={[styles.modalLabel, { fontSize: 13 * fontScale }]}>Categoría:</Text>
               <Picker
                 selectedValue={selectedQuestion}
                 onValueChange={(itemValue) => setSelectedQuestion(itemValue)}
@@ -237,14 +239,14 @@ export default function QuizManagement({navigation}: any) {
                 ))}
               </Picker>
 
-              <Text style={styles.modalLabel}>Pregunta:</Text>
-              <Text style={styles.selectedQuestionText}>{selectedQuestion.questionText}</Text>
+                <Text style={[styles.modalLabel, { fontSize: 13 * fontScale }]}>Pregunta:</Text>
+              <Text style={[styles.selectedQuestionText, { fontSize: 13 * fontScale }]}>{selectedQuestion.questionText}</Text>
 
-              <Text style={styles.modalLabel}>Respuestas:</Text>
+              <Text style={[styles.modalLabel, { fontSize: 13 * fontScale }]}>Respuestas:</Text>
               <View style={styles.answersContainer}>
                 {selectedQuestion.answers.map((answer, index) => (
                   <View key={answer.id} style={styles.answerItemRow}>
-                    <Text style={styles.answerItemLabel}>
+                    <Text style={[styles.answerItemLabel, { fontSize: 12 * fontScale }]}>
                       {`${String.fromCharCode(65 + index)}. ${answer.answerText}`}
                     </Text>
                     <View style={[
@@ -260,11 +262,11 @@ export default function QuizManagement({navigation}: any) {
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity style={[styles.modalButton, styles.editActionButton]}>
                   <MaterialCommunityIcons name="pencil" size={18} color="#fff" />
-                  <Text style={styles.modalButtonText}>Editar</Text>
+                  <Text style={[styles.modalButtonText, { fontSize: 13 * fontScale }]}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.modalButton, styles.deleteActionButton]}>
                   <MaterialCommunityIcons name="trash-can" size={18} color="#fff" />
-                  <Text style={styles.modalButtonText}>Eliminar</Text>
+                  <Text style={[styles.modalButtonText, { fontSize: 13 * fontScale }]}>Eliminar</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -343,7 +345,7 @@ export default function QuizManagement({navigation}: any) {
         <SafeAreaView style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Nueva Pregunta</Text>
+              <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>Nueva Pregunta</Text>
               <TouchableOpacity 
                 onPress={() => setNewQuestionModalVisible(false)}
                 style={styles.closeButton}
@@ -353,7 +355,7 @@ export default function QuizManagement({navigation}: any) {
             </View>
   
             <ScrollView style={styles.modalBody}>
-              <Text style={styles.modalLabel}>Categoría:</Text>
+              <Text style={[styles.modalLabel, { fontSize: 13 * fontScale }]}>Categoría:</Text>
               <Picker
                 selectedValue={selectedCategory}
                 onValueChange={(itemValue) => setSelectedCategory(itemValue)}
@@ -369,7 +371,7 @@ export default function QuizManagement({navigation}: any) {
                 ))}
               </Picker>
   
-              <Text style={styles.modalLabel}>Pregunta:</Text>
+              <Text style={[styles.modalLabel, { fontSize: 13 * fontScale }]}>Pregunta:</Text>
               <TextInput
                 style={[styles.textInput, { minHeight: 100, textAlignVertical: 'top' }]}
                 multiline
@@ -416,14 +418,14 @@ export default function QuizManagement({navigation}: any) {
                   onPress={handleSaveQuestion}
                 >
                   <MaterialCommunityIcons name="check" size={18} color="#fff" />
-                  <Text style={styles.modalButtonText}>Guardar</Text>
+                  <Text style={[styles.modalButtonText, { fontSize: 13 * fontScale }]}>Guardar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.deleteActionButton]}
                   onPress={() => setNewQuestionModalVisible(false)}
                 >
                   <MaterialCommunityIcons name="close" size={18} color="#fff" />
-                  <Text style={styles.modalButtonText}>Cancelar</Text>
+                  <Text style={[styles.modalButtonText, { fontSize: 13 * fontScale }]}>Cancelar</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>

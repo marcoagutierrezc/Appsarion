@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Category } from '../training/types/quiz';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface NewQuestionFormProps {
   categories: Category[];
@@ -14,6 +15,7 @@ interface NewQuestionFormProps {
 }
 
 export function NewQuestionForm({ categories, onSave, onCancel }: NewQuestionFormProps) {
+  const { fontScale } = useFontScale();
   const [category, setCategory] = useState('');
   const [questionText, setQuestionText] = useState('');
   const [answers, setAnswers] = useState([

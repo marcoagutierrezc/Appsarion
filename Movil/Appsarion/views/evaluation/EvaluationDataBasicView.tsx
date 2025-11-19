@@ -3,8 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { commonColors, commonStyles } from '../../styles/commonStyles';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export function EvaluationDataBasicView({route, navigation }:any) {
+  const { fontScale } = useFontScale();
   const params = route?.params ?? {};
   const fishLotId = params?.fishLotId ?? null;
   const ubication = params?.ubication ?? null;
@@ -75,20 +77,20 @@ export function EvaluationDataBasicView({route, navigation }:any) {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView style={styles.formContainer} contentContainerStyle={styles.formContent} keyboardShouldPersistTaps="handled">
-        <Text style={styles.sectionTitle}>Información básica</Text>
+        <Text style={[styles.sectionTitle, { fontSize: 16 * fontScale }]}>Información básica</Text>
 
         <View style={styles.dateTimeContainer}>
           <View style={styles.iconTextContainer}>
             <MaterialCommunityIcons name="clock-outline" size={22} color={commonColors.primary} />
-            <Text style={styles.dateTimeText}>{hour}</Text>
+            <Text style={[styles.dateTimeText, { fontSize: 13 * fontScale }]}>{hour}</Text>
           </View>
           <View style={styles.iconTextContainer}>
             <MaterialCommunityIcons name="calendar-month" size={22} color={commonColors.primary} />
-            <Text style={styles.dateTimeText}>{date}</Text>
+            <Text style={[styles.dateTimeText, { fontSize: 13 * fontScale }]}>{date}</Text>
           </View>
         </View>
 
-        <Text style={styles.inputLabel}>Condiciones ambientales</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Condiciones ambientales</Text>
         <TextInput
           style={styles.textArea}
           value={condAmbientals}
@@ -99,7 +101,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
           placeholderTextColor={commonColors.textTertiary}
         />
 
-        <Text style={styles.inputLabel}>Condiciones de almacenamiento</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Condiciones de almacenamiento</Text>
         <TextInput
           style={styles.textArea}
           value={condStorage}
@@ -110,7 +112,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
           placeholderTextColor={commonColors.textTertiary}
         />
 
-        <Text style={styles.inputLabel}>Temperatura (°C)</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Temperatura (°C)</Text>
         <View style={commonStyles.inputGroup}>
           <TextInput
             style={commonStyles.input}
@@ -125,7 +127,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
           />
         </View>
 
-        <Text style={styles.inputLabel}>Especie</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Especie</Text>
         <View style={commonStyles.inputGroup}>
           <TextInput
             style={commonStyles.input}
@@ -136,7 +138,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
           />
         </View>
 
-        <Text style={styles.inputLabel}>Peso promedio</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Peso promedio</Text>
         <View style={commonStyles.inputGroup}>
           <TextInput
             value={averageWeight !== null ? averageWeight.toString() : ''}
@@ -151,7 +153,7 @@ export function EvaluationDataBasicView({route, navigation }:any) {
           />
         </View>
 
-        <Text style={styles.inputLabel}>Cantidad</Text>
+        <Text style={[styles.inputLabel, { fontSize: 13 * fontScale }]}>Cantidad</Text>
         <View style={commonStyles.inputGroup}>
           <TextInput
             value={quantity !== null ? quantity.toString() : ''}

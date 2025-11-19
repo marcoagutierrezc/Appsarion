@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Image, ActivityIndicator, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { StatusBar } from 'expo-status-bar';  
 import { useDispatch } from 'react-redux';
 import { logIn } from '../store/slices/auth/authSlice';
 import { BASE_URL } from '../services/connection/connection';
 import { showAlert } from '../utils/alerts';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { commonColors } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 const LogoApp = require('../assets/LogoName.png');
 
@@ -14,7 +16,44 @@ export function Login({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [hidePassword, setHidePassword] = useState(true);
+  const { fontScale, setFontScale } = useFontScale();
+  const [logoTapCount, setLogoTapCount] = useState(0);
+  const tapTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch();
+  const [fontModalVisible, setFontModalVisible] = useState(false);
+
+  const handleLogoTap = () => {
+    // Cancelar el timeout anterior si existe
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+
+    setLogoTapCount(prev => {
+      const newCount = prev + 1;
+      
+      if (newCount === 5) {
+        setFontModalVisible(true);
+        setLogoTapCount(0);
+        return 0;
+      }
+      
+      // Reset count after 2 seconds of no taps
+      tapTimeoutRef.current = setTimeout(() => {
+        setLogoTapCount(0);
+      }, 2000);
+      
+      return newCount;
+    });
+  };
+
+  const saveFontScale = async (scale: number) => {
+    try {
+      await setFontScale(scale);
+      setFontModalVisible(false);
+    } catch (error) {
+      console.error('Error saving font scale:', error);
+    }
+  };
 
   const fetchUserRole = async (userId: number) => {
     try {
@@ -72,140 +111,185 @@ export function Login({ navigation }: any) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
-        {/* Header con logo y título */}
-        <View style={styles.headerSection}>
-          <Image source={LogoApp} style={styles.logo} />
-        </View>
-
-        {/* Sección de Login */}
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Iniciar Sesión</Text>
-
-          {/* Email Input */}
-          <View style={styles.inputGroup}>
-            <MaterialCommunityIcons name="email-outline" size={20} color="#0066cc" style={styles.inputIcon} />
-            <TextInput
-              style={styles.textInput}
-              placeholder="Correo electrónico"
-              placeholderTextColor="#aaa"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              returnKeyType="next"
-              autoCorrect={false}
-              value={email}
-              onChangeText={setEmail}
-              editable={!loading}
-            />
-          </View>
-
-          {/* Password Input */}
-          <View style={styles.inputGroup}>
-            <MaterialCommunityIcons name="lock-outline" size={20} color="#0066cc" style={styles.inputIcon} />
-            <TextInput
-              style={[styles.textInput, { flex: 1 }]}
-              placeholder="Contraseña"
-              placeholderTextColor="#aaa"
-              returnKeyType="done"
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={hidePassword}
-              editable={!loading}
-            />
-            <TouchableOpacity
-              onPress={() => setHidePassword(!hidePassword)}
-              style={styles.eyeIcon}
-            >
-              <MaterialCommunityIcons
-                name={hidePassword ? 'eye-off-outline' : 'eye-outline'}
-                size={20}
-                color="#0066cc"
-              />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.content}>
+          {/* Header con logo y título */}
+          <View style={styles.headerSection}>
+            <TouchableOpacity onPress={handleLogoTap} activeOpacity={0.7}>
+              <Image source={LogoApp} style={styles.logo} />
             </TouchableOpacity>
           </View>
 
-          {/* Login Button */}
-          <TouchableOpacity
-            style={[styles.primaryButton, loading && styles.buttonDisabled]}
-            onPress={login}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <>
-                <MaterialCommunityIcons name="login" size={20} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          {/* Sección de Login */}
+          <View style={styles.formSection}>
+            <Text style={[styles.sectionTitle, { fontSize: 18 * fontScale }]}>Iniciar Sesión</Text>
 
-          {/* Password Recovery Link */}
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => navigation.navigate('Recuperar Contraseña')}
-            disabled={loading}
-          >
-            <MaterialCommunityIcons name="lock-reset" size={18} color="#0066cc" style={{ marginRight: 6 }} />
-            <Text style={styles.linkButtonText}>¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity>
+            {/* Email Input */}
+            <View style={styles.inputGroup}>
+              <MaterialCommunityIcons name="email-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, { fontSize: 16 * fontScale }]}
+                placeholder="Correo electrónico"
+                placeholderTextColor="#aaa"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="next"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+                editable={!loading}
+              />
+            </View>
+
+            {/* Password Input */}
+            <View style={styles.inputGroup}>
+              <MaterialCommunityIcons name="lock-outline" size={20} color="#0066cc" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, { flex: 1, fontSize: 16 * fontScale }]}
+                placeholder="Contraseña"
+                placeholderTextColor="#aaa"
+                returnKeyType="done"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={hidePassword}
+                editable={!loading}
+              />
+              <TouchableOpacity
+                onPress={() => setHidePassword(!hidePassword)}
+                style={styles.eyeIcon}
+              >
+                <MaterialCommunityIcons
+                  name={hidePassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={20}
+                  color="#0066cc"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              style={[styles.primaryButton, loading && styles.buttonDisabled]}
+              onPress={login}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="login" size={20} color="#fff" style={{ marginRight: 8 }} />
+                  <Text style={[styles.primaryButtonText, { fontSize: 16 * fontScale }]}>Iniciar Sesión</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Password Recovery Link */}
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => navigation.navigate('Recuperar Contraseña')}
+              disabled={loading}
+            >
+              <MaterialCommunityIcons name="lock-reset" size={18} color="#0066cc" style={{ marginRight: 6 }} />
+              <Text style={[styles.linkButtonText, { fontSize: 14 * fontScale }]}>¿Olvidaste tu contraseña?</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={[styles.dividerText, { fontSize: 14 * fontScale }]}>o</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Sección de Registro */}
+          <View style={styles.actionSection}>
+            <Text style={[styles.actionTitle, { fontSize: 16 * fontScale }]}>¿No tienes cuenta?</Text>
+            <Text style={[styles.actionSubtitle, { fontSize: 13 * fontScale }]}>Crea una nueva cuenta para acceder</Text>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={() => navigation.navigate('Registro')}
+              disabled={loading}
+            >
+              <MaterialCommunityIcons name="account-plus" size={20} color="#0066cc" style={{ marginRight: 8 }} />
+              <Text style={[styles.secondaryButtonText, { fontSize: 15 * fontScale }]}>Crear Cuenta</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Sección de Soporte */}
+          <View style={styles.actionSection}>
+            <Text style={[styles.actionTitle, { fontSize: 16 * fontScale }]}>¿Necesitas ayuda?</Text>
+            <Text style={[styles.actionSubtitle, { fontSize: 13 * fontScale }]}>Contáctanos si tienes problemas con la app</Text>
+            <TouchableOpacity
+              style={styles.tertiaryButton}
+              onPress={() => navigation.navigate('SoportePQR')}
+              disabled={loading}
+            >
+              <MaterialCommunityIcons name="help-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={[styles.tertiaryButtonText, { fontSize: 15 * fontScale }]}>Soporte PQRS</Text>
+            </TouchableOpacity>
+          </View>
+
+          <StatusBar style="light" />
         </View>
+      </ScrollView>
 
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>o</Text>
-          <View style={styles.dividerLine} />
+      {/* Font Size Modal */}
+      <Modal visible={fontModalVisible} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={[styles.modalTitle, { fontSize: 18 * fontScale }]}>Tamaño de Fuente</Text>
+            
+            <View style={styles.fontOptionsContainer}>
+              {[0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5].map((scale) => (
+                <TouchableOpacity
+                  key={scale}
+                  style={[
+                    styles.fontOption,
+                    fontScale === scale && styles.fontOptionActive
+                  ]}
+                  onPress={() => saveFontScale(scale)}
+                >
+                  <Text style={[
+                    styles.fontOptionText,
+                    { fontSize: 14 * scale },
+                    fontScale === scale && styles.fontOptionTextActive
+                  ]}>
+                    {scale === 0.7 ? 'Muy Pequeño' : scale === 0.8 ? 'Pequeño' : scale === 0.9 ? 'Mediano' : scale === 1 ? 'Normal' : scale === 1.1 ? 'Grande' : scale === 1.2 ? 'Muy Grande' : scale === 1.3 ? 'Extra Grande' : scale === 1.4 ? 'Gigante' : 'Máximo'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setFontModalVisible(false)}
+            >
+              <Text style={[styles.closeButtonText, { fontSize: 16 * fontScale }]}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Sección de Registro */}
-        <View style={styles.actionSection}>
-          <Text style={styles.actionTitle}>¿No tienes cuenta?</Text>
-          <Text style={styles.actionSubtitle}>Crea una nueva cuenta para acceder</Text>
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => navigation.navigate('Registro')}
-            disabled={loading}
-          >
-            <MaterialCommunityIcons name="account-plus" size={20} color="#0066cc" style={{ marginRight: 8 }} />
-            <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-        </View>
-
-        {/* Sección de Soporte */}
-        <View style={styles.actionSection}>
-          <Text style={styles.actionTitle}>¿Necesitas ayuda?</Text>
-          <Text style={styles.actionSubtitle}>Contáctanos si tienes problemas con la app</Text>
-          <TouchableOpacity
-            style={styles.tertiaryButton}
-            onPress={() => navigation.navigate('SoportePQR')}
-            disabled={loading}
-          >
-            <MaterialCommunityIcons name="help-circle-outline" size={20} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.tertiaryButtonText}>Soporte PQRS</Text>
-          </TouchableOpacity>
-        </View>
-
-        <StatusBar style="light" />
-      </View>
-    </ScrollView>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
   scrollContainer: {
     flexGrow: 1,
     backgroundColor: '#f8f9fa',
   },
-  container: {
+  content: {
     flex: 1,
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 20,
@@ -396,6 +480,70 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.2,
+  },
+
+  /* Font Size Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  fontOptionsContainer: {
+    flexDirection: 'column',
+    gap: 10,
+    marginBottom: 20,
+  },
+  fontOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#f8f9fa',
+  },
+  fontOptionActive: {
+    borderColor: '#0066cc',
+    backgroundColor: '#f0f5ff',
+  },
+  fontOptionText: {
+    fontWeight: '500',
+    color: '#1a1a1a',
+    textAlign: 'center',
+  },
+  fontOptionTextActive: {
+    color: '#0066cc',
+    fontWeight: '700',
+  },
+  closeButton: {
+    backgroundColor: '#0066cc',
+    borderRadius: 12,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

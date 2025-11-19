@@ -6,8 +6,10 @@ import { RootState } from '../store';
 import { BASE_URL } from "../services/connection/connection";
 import { obtenerCiudadesPorDepartamento, obtenerListaDepartamentos } from '../utils/filters';
 import data from '../data/colombia.json';
+import { useFontScale } from '../context/FontScaleContext';
 
 export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any }) {
+  const { fontScale } = useFontScale();
   const id = useSelector((state: RootState) => state.auth.user?.id);
   const checkedRol = useSelector((state: RootState) => state.auth.user?.role);
   
@@ -145,14 +147,14 @@ export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any 
 
       {(checkedRol === 'Piscicultor' || checkedRol === 'Comercializador') && (
         <>
-          <Text>Departamento</Text>
+          <Text style={[{ fontSize: 14 * fontScale }]}>Departamento</Text>
           <Picker selectedValue={formFields.departamento || ''} onValueChange={handleDepartamentoChange}>
             <Picker.Item label="-- Selecciona un departamento --" value="" />
             {listDepartamento.map((departamento, index) => (
               <Picker.Item key={index} label={departamento} value={departamento} />
             ))}
           </Picker>
-          <Text>Municipio</Text>
+          <Text style={[{ fontSize: 14 * fontScale }]}>Municipio</Text>
           <Picker selectedValue={formFields.municipio || ''} onValueChange={handleMunicipioChange}>
             <Picker.Item label="-- Selecciona un municipio --" value="" />
             {citiesFilter.map((municipio, index) => (
@@ -163,7 +165,7 @@ export function RegisterRoleDataNextLoginView({ navigation }: { navigation: any 
       )}
 
       <TouchableOpacity style={[styles.button, styles.finishButton]} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Finalizar</Text>
+        <Text style={[styles.buttonText, { fontSize: 16 * fontScale }]}>Finalizar</Text>
       </TouchableOpacity>
     </ScrollView>
   );

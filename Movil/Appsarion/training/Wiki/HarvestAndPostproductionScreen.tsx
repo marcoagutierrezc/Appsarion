@@ -4,8 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AestheticText from '../../components/AestheticText';
 import InlineBackHeader from '../../components/InlineBackHeader';
 import { commonColors } from '../../styles/commonStyles';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export function HarvestAndPostproductionScreen(){
+    const { fontScale } = useFontScale();
     return (
     <SafeAreaView style={styles.container}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>

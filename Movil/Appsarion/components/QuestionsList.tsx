@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Question, Category } from '../training/types/quiz';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface QuestionsListProps {
   questions: Question[];
@@ -11,6 +12,7 @@ interface QuestionsListProps {
 }
 
 export function QuestionsList({ questions, categories, onAddQuestion, onEditQuestion }: QuestionsListProps) {
+  const { fontScale } = useFontScale();
   const [selectedCategory, setSelectedCategory] = useState('');
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
 

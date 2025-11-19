@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { commonColors } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 interface AestheticTextProps {
   title?: string;
@@ -15,11 +16,12 @@ const AestheticText: React.FC<AestheticTextProps> = ({
   titleColor = commonColors.textPrimary,
   contentColor = commonColors.textPrimary,
 }) => {
+  const { fontScale } = useFontScale();
   return (
     <View style={styles.container}>
-      {title && <Text style={[styles.title, { color: titleColor }]}>{title}</Text>}
+      {title && <Text style={[styles.title, { color: titleColor, fontSize: 18 * fontScale }]}>{title}</Text>}
       {title && <View style={styles.underline} />}
-      <Text style={[styles.content, { color: contentColor }]}>{content}</Text>
+      <Text style={[styles.content, { color: contentColor, fontSize: 14 * fontScale }]}>{content}</Text>
     </View>
   );
 };

@@ -1,14 +1,15 @@
 import 'react-native-gesture-handler';
 import React from "react";
-import { Alert, TouchableOpacity, Platform } from 'react-native';
+import { Alert, TouchableOpacity, Platform, Text } from 'react-native';
 import { showAlert } from '../utils/alerts';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { logOut } from '../store/slices/auth/authSlice';
-import { Home, VerificationUsersView, UsersView, RegisterLotDataView, RegisterRoleDataNextLoginView, CrudFishLotView, EvaluationDataBasicView, EvaluationDataView } from '../views';
+import { Home, VerificationUsersView, UsersView, RegisterLotDataView, EditFishLotView, RegisterRoleDataNextLoginView, CrudFishLotView, EvaluationDataBasicView, EvaluationDataView, EditEvaluationView } from '../views';
 import TrainingStack from './TrainingStack';
+import { useFontScale } from '../context/FontScaleContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,8 +25,10 @@ const MainStack = () => {
       <Stack.Screen name="Drawer" component={DrawerNavigation} options={{headerShown: false}}/>
       <Stack.Screen name="Registro Rol" component={RegisterRoleDataNextLoginView} />
       <Stack.Screen name="Registrar Lote" component={RegisterLotDataView} />
+      <Stack.Screen name="Editar Lote" component={EditFishLotView} />
       <Stack.Screen name="Evaluacion - Datos Basicos" component={EvaluationDataBasicView} />
       <Stack.Screen name="Evaluacion" component={EvaluationDataView} />
+      <Stack.Screen name="Editar Evaluacion" component={EditEvaluationView} />
     </Stack.Navigator>
   );
 };
@@ -36,6 +39,7 @@ const LogoutScreen = () => null;
 const DrawerNavigation = ({ navigation }:any) => {
   const dispatch = useDispatch();
   const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
+  const { fontScale } = useFontScale();
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
@@ -57,13 +61,19 @@ const DrawerNavigation = ({ navigation }:any) => {
   };
 
   return (
-    <Drawer.Navigator initialRouteName="Home">
+    <Drawer.Navigator 
+      initialRouteName="Home"
+      screenOptions={{
+        drawerLabelStyle: { fontSize: 14 * fontScale },
+        drawerContentStyle: { paddingTop: 10 },
+      }}
+    >
       <Drawer.Screen name="Home" component={Home} />
       {userRole === "Admin" && 
         <Drawer.Screen name="Verificación" component={VerificationUsersView} />}
       {userRole === "Admin" && 
         <Drawer.Screen name="Usuarios" component={UsersView} />}
-      {(userRole === "Piscicultor" || userRole === "Comercializador" || userRole === "Evaluador" || userRole === "Academico" || userRole === "Académico") && (
+      {(userRole === "Admin" || userRole === "Piscicultor" || userRole === "Comercializador" || userRole === "Evaluador" || userRole === "Academico" || userRole === "Académico") && (
         <Drawer.Screen name="Lotes" component={CrudFishLotView} />
       )}
       <Drawer.Screen

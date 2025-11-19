@@ -9,9 +9,11 @@ import { RootState } from '../store';
 import { File, Directory, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { commonColors, commonStyles } from '../styles/commonStyles';
+import { useFontScale } from '../context/FontScaleContext';
 
 
 export function ResultsScreen({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const [certificates, setCertificates] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [downloading, setDownloading] = useState<number | null>(null);
@@ -71,7 +73,7 @@ export function ResultsScreen({ navigation }: any) {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={commonColors.primary} />
-          <Text style={styles.loadingText}>Cargando certificados...</Text>
+          <Text style={[styles.loadingText, { fontSize: 14 * fontScale }]}>Cargando certificados...</Text>
         </View>
       </SafeAreaView>
     );
@@ -103,8 +105,8 @@ export function ResultsScreen({ navigation }: any) {
             <View style={styles.headerIconContainer}>
               <MaterialCommunityIcons name="certificate" size={32} color={commonColors.success} />
             </View>
-            <Text style={styles.title}>Mis Certificados</Text>
-            <Text style={styles.subtitle}>{certificates.length} certificado{certificates.length !== 1 ? 's' : ''} aprobado{certificates.length !== 1 ? 's' : ''}</Text>
+            <Text style={[styles.title, { fontSize: 20 * fontScale }]}>Mis Certificados</Text>
+            <Text style={[styles.subtitle, { fontSize: 13 * fontScale }]}>{certificates.length} certificado{certificates.length !== 1 ? 's' : ''} aprobado{certificates.length !== 1 ? 's' : ''}</Text>
           </View>
 
           {/* Certificates List */}
@@ -116,8 +118,8 @@ export function ResultsScreen({ navigation }: any) {
                     <MaterialCommunityIcons name="check-circle" size={24} color={commonColors.success} />
                   </View>
                   <View style={styles.cardTitleContainer}>
-                    <Text style={styles.certTitle}>Certificado #{item.id}</Text>
-                    <Text style={styles.certDate}>
+                    <Text style={[styles.certTitle, { fontSize: 14 * fontScale }]}>Certificado #{item.id}</Text>
+                    <Text style={[styles.certDate, { fontSize: 12 * fontScale }]}>
                       <MaterialCommunityIcons name="calendar" size={14} color={commonColors.textSecondary} /> {item.issuedAt}
                     </Text>
                   </View>
@@ -136,12 +138,12 @@ export function ResultsScreen({ navigation }: any) {
                   {downloading === item.id ? (
                     <>
                       <ActivityIndicator size="small" color="#fff" />
-                      <Text style={styles.downloadButtonText}>Descargando...</Text>
+                      <Text style={[styles.downloadButtonText, { fontSize: 13 * fontScale }]}>Descargando...</Text>
                     </>
                   ) : (
                     <>
                       <MaterialCommunityIcons name="download" size={18} color="#fff" />
-                      <Text style={styles.downloadButtonText}>Descargar PDF</Text>
+                      <Text style={[styles.downloadButtonText, { fontSize: 13 * fontScale }]}>Descargar PDF</Text>
                     </>
                   )}
                 </TouchableOpacity>

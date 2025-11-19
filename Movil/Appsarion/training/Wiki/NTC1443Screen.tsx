@@ -7,8 +7,10 @@ import AestheticText from "../../components/AestheticText"
 import InlineBackHeader from "../../components/InlineBackHeader"
 import DragDropExercise from "../../components/DragDropExercise"
 import { commonColors } from '../../styles/commonStyles'
+import { useFontScale } from '../../context/FontScaleContext'
 
 export function NTC1443Screen() {
+  const { fontScale } = useFontScale();
   const scrollViewRef = useRef<ScrollView>(null)
 
   return (

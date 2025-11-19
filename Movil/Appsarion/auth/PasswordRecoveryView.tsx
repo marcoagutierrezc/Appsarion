@@ -10,16 +10,18 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BASE_URL } from '../services/connection/connection';
-import { showAlert } from '../utils/alerts';
+import { useFontScale } from '../context/FontScaleContext';
 
 export function PasswordRecoveryView({ navigation }: any) {
+  const { fontScale } = useFontScale();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleRequestReset = async () => {
     if (!email || !email.includes('@')) {
-      showAlert('Error', 'Por favor ingresa un email válido.');
+      setErrorMessage('Por favor ingresa un email válido.');
       return;
     }
 
@@ -35,16 +37,16 @@ export function PasswordRecoveryView({ navigation }: any) {
 
       if (response.ok && data.success) {
         setSent(true);
-        showAlert('Éxito', 'Se ha enviado un enlace de recuperación a tu email. Revísalo en los próximos 10 minutos.');
         setTimeout(() => {
           navigation.navigate('Login');
-        }, 2000);
+        }, 5000);
+        setErrorMessage(null);
       } else {
-        showAlert('Error', data.message || 'No se pudo procesar la solicitud.');
+        setErrorMessage(data.message || 'No se pudo procesar la solicitud.');
       }
     } catch (error: any) {
       console.error('Error solicitando reset:', error);
-      showAlert('Error', 'Error al conectar con el servidor.');
+      setErrorMessage('Error al conectar con el servidor.');
     } finally {
       setLoading(false);
     }
@@ -53,34 +55,29 @@ export function PasswordRecoveryView({ navigation }: any) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#0066cc" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Recuperar Contraseña</Text>
-          <Text style={styles.headerSubtitle}>Reestablece tu contraseña</Text>
-        </View>
-      </View>
-
       {!sent ? (
         <View style={styles.formContainer}>
+
           {/* Icon */}
           <View style={styles.iconContainer}>
             <MaterialCommunityIcons name="lock-reset" size={64} color="#0066cc" />
           </View>
 
           {/* Description */}
-          <Text style={styles.description}>
+          <Text style={[styles.description, { fontSize: 15 * fontScale }]}>
             Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
           </Text>
 
+          {errorMessage ? (
+            <View style={styles.errorBox}>
+              <MaterialCommunityIcons name="alert-circle" size={20} color="#d32f2f" style={{ marginRight: 8 }} />
+              <Text style={[styles.errorText, { fontSize: 13 * fontScale }]}>{errorMessage}</Text>
+            </View>
+          ) : null}
+
           {/* Email Input */}
           <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Correo Electrónico</Text>
+            <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Correo Electrónico</Text>
             <View style={styles.inputGroup}>
               <MaterialCommunityIcons name="email-outline" size={20} color="#0066cc" style={styles.inputIcon} />
               <TextInput
@@ -100,8 +97,8 @@ export function PasswordRecoveryView({ navigation }: any) {
           <View style={styles.infoBox}>
             <MaterialCommunityIcons name="information" size={20} color="#ff9800" />
             <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.infoTitle}>Información importante</Text>
-              <Text style={styles.infoText}>
+              <Text style={[styles.infoTitle, { fontSize: 14 * fontScale }]}>Información importante</Text>
+              <Text style={[styles.infoText, { fontSize: 13 * fontScale }]}>
                 El enlace de recuperación es válido por <Text style={styles.bold}>10 minutos</Text>. Revisa tu carpeta de spam si no ves el correo.
               </Text>
             </View>
@@ -114,7 +111,7 @@ export function PasswordRecoveryView({ navigation }: any) {
               onPress={() => navigation.goBack()}
               disabled={loading}
             >
-              <Text style={styles.secondaryButtonText}>Cancelar</Text>
+              <Text style={[styles.secondaryButtonText, { fontSize: 15 * fontScale }]}>Cancelar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -127,7 +124,7 @@ export function PasswordRecoveryView({ navigation }: any) {
               ) : (
                 <>
                   <MaterialCommunityIcons name="send" size={18} color="#fff" style={{ marginRight: 8 }} />
-                  <Text style={styles.primaryButtonText}>Enviar Enlace</Text>
+                  <Text style={[styles.primaryButtonText, { fontSize: 15 * fontScale }]}>Enviar Enlace</Text>
                 </>
               )}
             </TouchableOpacity>
@@ -141,19 +138,19 @@ export function PasswordRecoveryView({ navigation }: any) {
           </View>
 
           {/* Success Message */}
-          <Text style={styles.successTitle}>¡Enlace Enviado!</Text>
+          <Text style={[styles.successTitle, { fontSize: 20 * fontScale }]}>¡Enlace Enviado!</Text>
           
           <View style={styles.successMessageBox}>
-            <Text style={styles.successMessage}>
+            <Text style={[styles.successMessage, { fontSize: 14 * fontScale }]}>
               Hemos enviado un enlace de recuperación a:
             </Text>
-            <Text style={styles.emailHighlight}>{email}</Text>
-            <Text style={styles.successInstructions}>
-              1. Abre tu correo (revisa spam si es necesario)\n
-              2. Haz clic en el enlace de recuperación\n
-              3. Sigue las instrucciones para cambiar tu contraseña\n
-              4. Inicia sesión con tu nueva contraseña
-            </Text>
+            <Text style={[styles.emailHighlight, { fontSize: 15 * fontScale }]}>{email}</Text>
+            <View style={styles.successSteps}>
+              <Text style={[styles.successInstructions, { fontSize: 13 * fontScale }]}>1. Abre tu correo (revisa spam si es necesario)</Text>
+              <Text style={[styles.successInstructions, { fontSize: 13 * fontScale }]}>2. Haz clic en el enlace de recuperación</Text>
+              <Text style={styles.successInstructions}>3. Sigue las instrucciones para cambiar tu contraseña</Text>
+              <Text style={styles.successInstructions}>4. Inicia sesión con tu nueva contraseña</Text>
+            </View>
           </View>
 
           {/* Warning */}
@@ -177,38 +174,23 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  /* Header */
-  header: {
-    backgroundColor: '#0066cc',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingTop: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 2,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
-  },
-
   /* Form Container */
   formContainer: {
     padding: 20,
     gap: 20,
+  },
+
+  inlineBack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingVertical: 4,
+  },
+  inlineBackText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0066cc',
   },
 
   /* Icon Container */
@@ -327,6 +309,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fdecea',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f5c6cb',
+    padding: 12,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#b71c1c',
+    fontWeight: '500',
+    lineHeight: 18,
+  },
+
   buttonDisabled: {
     opacity: 0.6,
   },
@@ -352,8 +351,6 @@ const styles = StyleSheet.create({
     color: '#28a745',
     marginTop: 8,
   },
-
-  /* Success Message Box */
   successMessageBox: {
     backgroundColor: '#d4edda',
     borderRadius: 12,
@@ -374,11 +371,14 @@ const styles = StyleSheet.create({
     color: '#28a745',
     textAlign: 'center',
   },
+  successSteps: {
+    marginTop: 8,
+    gap: 6,
+  },
   successInstructions: {
     fontSize: 13,
     color: '#155724',
-    lineHeight: 22,
-    marginTop: 8,
+    lineHeight: 20,
     fontWeight: '500',
   },
 

@@ -4,8 +4,10 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import {BASE_URL} from "../../services/connection/connection";
 import ImageUploader from '../../components/ImageUploader';
+import { useFontScale } from '../../context/FontScaleContext';
 
   export function RegisterRoleDataView({ route, navigation }: any) {
+    const { fontScale } = useFontScale();
     const params = route?.params ?? {};
     const { name, documentType, documentNumber, phoneNumber, email, password } = params as any;
     const [checkedRol, setCheckedRoll] = useState<string>('');
@@ -80,8 +82,8 @@ import ImageUploader from '../../components/ImageUploader';
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>Crear Cuenta</Text>
-            <Text style={styles.headerSubtitle}>Paso 2 de 2: Información del Rol</Text>
+            <Text style={[styles.headerTitle, { fontSize: 22 * fontScale }]}>Crear Cuenta</Text>
+            <Text style={[styles.headerSubtitle, { fontSize: 13 * fontScale }]}>Paso 2 de 2: Información del Rol</Text>
           </View>
           <View style={styles.progressBar}>
             <View style={[styles.progressSegment, { backgroundColor: '#0066cc' }]} />
@@ -93,7 +95,7 @@ import ImageUploader from '../../components/ImageUploader';
         <View style={styles.formSection}>
           {/* Role Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Selecciona tu Rol *</Text>
+            <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Selecciona tu Rol *</Text>
             <View style={styles.pickerWrapper}>
               <MaterialCommunityIcons name="briefcase-outline" size={20} color="#0066cc" style={styles.inputIcon} />
               <Picker
@@ -112,7 +114,7 @@ import ImageUploader from '../../components/ImageUploader';
 
           {/* Justification */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Justificación *</Text>
+            <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Justificación *</Text>
             <View style={styles.textAreaWrapper}>
               <MaterialCommunityIcons name="text-box-outline" size={20} color="#0066cc" style={styles.inputIcon} />
               <TextInput
@@ -129,16 +131,16 @@ import ImageUploader from '../../components/ImageUploader';
 
           {/* Supporting Document */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Documento de Soporte *</Text>
+            <Text style={[styles.inputLabel, { fontSize: 14 * fontScale }]}>Documento de Soporte *</Text>
             <View style={styles.documentSection}>
               <MaterialCommunityIcons name="file-document-outline" size={20} color="#0066cc" style={{ marginRight: 8 }} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.documentText}>Carga un documento que respalde tu rol</Text>
+                <Text style={[styles.documentText, { fontSize: 13 * fontScale }]}>Carga un documento que respalde tu rol</Text>
                 <ImageUploader onImageSelected={handleImageSelected} />
                 {supportingDocument && (
                   <View style={styles.successMessage}>
                     <MaterialCommunityIcons name="check-circle" size={16} color="#28a745" style={{ marginRight: 6 }} />
-                    <Text style={styles.successText}>Imagen seleccionada con éxito</Text>
+                    <Text style={[styles.successText, { fontSize: 13 * fontScale }]}>Imagen seleccionada con éxito</Text>
                   </View>
                 )}
               </View>
@@ -154,7 +156,7 @@ import ImageUploader from '../../components/ImageUploader';
             disabled={isSubmitting}
           >
             <MaterialCommunityIcons name="arrow-left" size={18} color="#0066cc" style={{ marginRight: 6 }} />
-            <Text style={styles.secondaryButtonText}>Atrás</Text>
+            <Text style={[styles.secondaryButtonText, { fontSize: 14 * fontScale }]}>Atrás</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -163,7 +165,7 @@ import ImageUploader from '../../components/ImageUploader';
             disabled={isSubmitting}
           >
             <MaterialCommunityIcons name="close" size={18} color="#fff" style={{ marginRight: 6 }} />
-            <Text style={styles.tertiaryButtonText}>Cancelar</Text>
+            <Text style={[styles.tertiaryButtonText, { fontSize: 14 * fontScale }]}>Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -176,7 +178,7 @@ import ImageUploader from '../../components/ImageUploader';
             ) : (
               <>
                 <MaterialCommunityIcons name="check" size={18} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={styles.primaryButtonText}>Finalizar</Text>
+                <Text style={[styles.primaryButtonText, { fontSize: 15 * fontScale }]}>Finalizar</Text>
               </>
             )}
           </TouchableOpacity>

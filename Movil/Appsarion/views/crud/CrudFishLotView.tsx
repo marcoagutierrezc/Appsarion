@@ -8,12 +8,14 @@ import FishLotCard from '../../components/FishLotCard';
 type FishLot = { id: number; lotName: string; neighborhood: string };
 import { BASE_URL } from '../../services/connection/connection';
 import { commonColors } from '../../styles/commonStyles';
+import { useFontScale } from '../../context/FontScaleContext';
 
 export function CrudFishLotView({ navigation }: any) {
   const userRole = useSelector((state: RootState) => state.auth.user?.role ?? '');
   const rol = normalizeRole(userRole);
   const userId = useSelector((state: RootState) => state.auth.user?.idRole);
   const [fishLots, setFishLots] = useState<FishLot[]>([]);
+  const { fontScale } = useFontScale();
 
   function normalizeRole(role: string): string {
     if (!role) return '';
@@ -37,18 +39,20 @@ export function CrudFishLotView({ navigation }: any) {
         Alert.alert('Sesión requerida', 'No encontramos tu rol de usuario. Vuelve a iniciar sesión.');
         return;
       }
-      if (rol !== 'admin' && !userId) {
-        Alert.alert('Error', 'El ID del usuario es necesario para cargar los lotes.');
-        return;
-      }
 
-      // If backend does not support admin listing, avoid calling an invalid endpoint
-      if (rol === 'admin' && !userId) {
-        setFishLots([]);
-        return;
-      }
+      let endpoint = '';
 
-      const endpoint = `${BASE_URL}/fish_lot/${rol}/${userId}`;
+      // Para admin: obtener todos los lotes
+      if (rol === 'admin') {
+        endpoint = `${BASE_URL}/fish_lot`;
+      } else {
+        // Para otros roles: obtener lotes del usuario específico
+        if (!userId) {
+          Alert.alert('Error', 'El ID del usuario es necesario para cargar los lotes.');
+          return;
+        }
+        endpoint = `${BASE_URL}/fish_lot/${rol}/${userId}`;
+      }
 
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -69,6 +73,7 @@ export function CrudFishLotView({ navigation }: any) {
         .filter((it: any) => Number.isFinite(it.id));
       if (!isActiveRef || isActiveRef.current) setFishLots(list);
     } catch (error) {
+      console.error('Error al cargar lotes:', error);
       Alert.alert('Error', 'Hubo un problema al cargar los lotes.');
     }
   };
@@ -108,7 +113,7 @@ export function CrudFishLotView({ navigation }: any) {
           onPress={() => navigation.navigate('Registrar Lote')}
           accessibilityLabel="Registrar nuevo lote"
         >
-          <Text style={styles.textButton}>+</Text>
+          <Text style={[styles.textButton, { fontSize: 24 * fontScale }]}>+</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
